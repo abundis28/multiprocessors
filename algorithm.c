@@ -9,9 +9,11 @@
 // CONSTANTS
 #define MAX_LINE_LENGTH 1000
 
+// GLOBAL VARIABLES
 int row_a, column_a, row_b, column_b;
 
 
+// FUNCTIONS
 int MatrixValidation(char id_matrix, FILE *textfile){
     char ch;
     int elements_count = 0;
@@ -49,7 +51,6 @@ int MatrixValidation(char id_matrix, FILE *textfile){
     } while (1);
 }
 
-// FUNCTIONS
 int OpenFile(char id_matrix) {
     printf("Opening file: ");
     FILE    *textfile;
@@ -60,27 +61,34 @@ int OpenFile(char id_matrix) {
         textfile = fopen("matrix/matrixA2500.txt", "r");
         MatrixValidation(id_matrix, textfile);
         printf("Successful print of matrix A with dimensions %d, %d. \n", row_a, column_a);
-
     } else if (id_matrix == 'B') {
         printf("B\n");
         textfile = fopen("matrix/matrixB2500.txt", "r");
         MatrixValidation(id_matrix, textfile);
         printf("Successful print of matrix B with dimensions %d, %d. \n", row_b, column_b);
     }
-    
+
     if(textfile == NULL) {
         printf("Null file for matrix %c, try again!\n", id_matrix);
         return 0;
     }
-    
+
     fclose(textfile);
     printf("Successful load of matrix %c\n", id_matrix);
     return 1;
 }
 
+int CreateMatrix() {
+    return 0;
+}
+
 int LoadMatrixes() {
     if(!OpenFile('A') || !OpenFile('B')) {
         printf("Error while loading matrixes.");
+        return 0;
+    }
+    if(!CreateMatrix('A') || !CreateMatrix('B')) {
+        printf("Error while creating matrixes.");
         return 0;
     }
     return 1;
