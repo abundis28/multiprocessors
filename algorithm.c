@@ -12,7 +12,14 @@
 int row_a, column_a, row_b, column_b;
 
 
-int MatrixValidation(char id_matrix, int elements_count){
+int MatrixValidation(char id_matrix, FILE *textfile){
+    char ch;
+    int elements_count = 0;
+    for (ch = getc(textfile); ch != EOF; ch = getc(textfile)){
+        if (ch == '\n')
+            elements_count++;
+    }
+
     int row = 0, column = 0;
     do{
         printf("\nPlease write the number of rows matrix %c : ", id_matrix);
@@ -20,57 +27,45 @@ int MatrixValidation(char id_matrix, int elements_count){
         printf("Please write the number of columns matrix %c : ", id_matrix);
         scanf("%d", &column);
         if(id_matrix == 'A'){
-            if((row *column) <= elements_count){
-              return row, column;  
+            if((row *column) <= elements_count) {
+                row_a = row;
+                column_a = column;
+                break;
             }
-            else{
+            else
                 printf("\n ERROR: Please enter dimensions that not overpass %d.\n ", elements_count);
-            }
         }
         else if(id_matrix == 'B'){
-            if(((row *column) <= elements_count) && (column_a == row)){
-                return row, column;
+            if(((row *column) <= elements_count) && (column_a == row)) {
+                row_b = row;
+                column_b = column;
+                break;
             }
-            else if ((row *column) <= elements_count){
+            else if ((row *column) <= elements_count)
                 printf("\n ERROR: Wrong dimensions. Please take into account that the rows of matrix %c must match %d. \n", id_matrix, column_a);
-            }
-            else{
+            else
                 printf("\n ERROR: Size too big, the dimensions must not overpass %d elements. Please take into account that the rows of matrix %c must match %d. \n", elements_count, id_matrix, column_a);
-            }
         }
-    }while (1 == 1);
-
-    
+    } while (1);
 }
 
 // FUNCTIONS
 int OpenFile(char id_matrix) {
     printf("Opening file: ");
     FILE    *textfile;
-    char    line[MAX_LINE_LENGTH], ch;
-    int     elements_count;
+    char    line[MAX_LINE_LENGTH];
 
     if (id_matrix == 'A'){
         printf("A\n");
         textfile = fopen("matrix/matrixA2500.txt", "r");
-        elements_count = 0;
-        for (ch = getc(textfile); ch != EOF; ch = getc(textfile)){
-            if (ch == '\n') {
-                elements_count++;
-            }
-        }
-        row_a, column_a = MatrixValidation(id_matrix, elements_count);
+        MatrixValidation(id_matrix, textfile);
+        printf("Successful print of matrix A with dimensions %d, %d'\n", row_a, column_a);
 
     } else if (id_matrix == 'B') {
         printf("B\n");
         textfile = fopen("matrix/matrixB2500.txt", "r");
-        elements_count = 0;
-        for (ch = getc(textfile); ch != EOF; ch = getc(textfile)){
-            if (ch == '\n') {
-                elements_count++;
-            }
-        }
-        row_b, column_b = MatrixValidation(id_matrix, elements_count);
+        MatrixValidation(id_matrix, textfile);
+        printf("Successful print of matrix B with dimensions %d, %d\n", row_b, column_b);
     }
     
     if(textfile == NULL) {
