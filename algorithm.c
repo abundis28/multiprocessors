@@ -9,18 +9,51 @@
 // CONSTANTS
 #define MAX_LINE_LENGTH 1000
 
+int Row_A, Column_A, Row_B, Column_B;
+
+
+int MatrixValidation(char id_matrix, int elements_count){
+    int row = 0, column = 0;
+
+    printf("Please write the number of rows and columns for matrix %c : ", id_matrix);
+    scanf("%d, %d", &row, &column);
+    if(((row *column) <= elements_count) && (id_matrix == 'A')){
+        return row, column;
+    }
+    else if(((row *column) <= elements_count) && (id_matrix == 'B') && (Column_A == row)){
+        return row, column;
+    }
+
+}
+
 // FUNCTIONS
 int OpenFile(char id_matrix) {
     printf("Opening file: ");
     FILE    *textfile;
-    char    line[MAX_LINE_LENGTH];
-    
+    char    line[MAX_LINE_LENGTH], ch;
+    int     elements_count;
+
     if (id_matrix == 'A'){
         printf("A\n");
         textfile = fopen("matrix/matrixA2500.txt", "r");
+        elements_count = 0;
+        for (ch = getc(textfile); ch != EOF; ch = getc(textfile)){
+            if (ch == '\n') {
+                elements_count++;
+            }
+        }
+        Row_A, Column_A = MatrixValidation(id_matrix, elements_count);
+
     } else if (id_matrix == 'B') {
         printf("B\n");
         textfile = fopen("matrix/matrixB2500.txt", "r");
+        elements_count = 0;
+        for (ch = getc(textfile); ch != EOF; ch = getc(textfile)){
+            if (ch == '\n') {
+                elements_count++;
+            }
+        }
+        Row_B, Column_B = MatrixValidation(id_matrix, elements_count);
     }
     
     if(textfile == NULL) {
