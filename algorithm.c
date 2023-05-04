@@ -28,10 +28,6 @@ int OpenFile(char id_matrix) {
         return 0;
     }
     
-    // while(fgets(line, MAX_LINE_LENGTH, textfile)){
-    //     printf(line);
-    // }
-    
     fclose(textfile);
     printf("Successful load of matrix %c\n", id_matrix);
     return 1;
