@@ -59,13 +59,13 @@ int OpenFile(char id_matrix) {
         printf("A\n");
         textfile = fopen("matrix/matrixA2500.txt", "r");
         MatrixValidation(id_matrix, textfile);
-        printf("Successful print of matrix A with dimensions %d, %d'\n", row_a, column_a);
+        printf("Successful print of matrix A with dimensions %d, %d. \n", row_a, column_a);
 
     } else if (id_matrix == 'B') {
         printf("B\n");
         textfile = fopen("matrix/matrixB2500.txt", "r");
         MatrixValidation(id_matrix, textfile);
-        printf("Successful print of matrix B with dimensions %d, %d\n", row_b, column_b);
+        printf("Successful print of matrix B with dimensions %d, %d. \n", row_b, column_b);
     }
     
     if(textfile == NULL) {
