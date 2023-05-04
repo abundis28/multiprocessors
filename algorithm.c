@@ -9,21 +9,38 @@
 // CONSTANTS
 #define MAX_LINE_LENGTH 1000
 
-int Row_A, Column_A, Row_B, Column_B;
+int row_a, column_a, row_b, column_b;
 
 
 int MatrixValidation(char id_matrix, int elements_count){
     int row = 0, column = 0;
+    do{
+        printf("\n Please write the number of rows matrix %c : ", id_matrix);
+        scanf("%d", &row);
+        printf("Please write the number of columns matrix %c : ", id_matrix);
+        scanf("%d", &column);
+        if(id_matrix == 'A'){
+            if((row *column) <= elements_count){
+              return row, column;  
+            }
+            else{
+                printf("\n ERROR: Please enter dimensions that not overpass %d.\n ", elements_count);
+            }
+        }
+        else if(id_matrix == 'B'){
+            if(((row *column) <= elements_count) && (column_a == row)){
+                return row, column;
+            }
+            else if ((row *column) <= elements_count){
+                printf("\n ERROR: Wrong dimensions. Please take into account that the rows of matrix %c must match %d. ", id_matrix, column_a);
+            }
+            else{
+                printf("\n ERROR: Size too big, the dimensions must not overpass %d elements. Please take into account that the rows of matrix %c must match %d. ", elements_count, id_matrix, column_a);
+            }
+        }
+    }while (1 == 1);
 
-    printf("Please write the number of rows and columns for matrix %c : ", id_matrix);
-    scanf("%d, %d", &row, &column);
-    if(((row *column) <= elements_count) && (id_matrix == 'A')){
-        return row, column;
-    }
-    else if(((row *column) <= elements_count) && (id_matrix == 'B') && (Column_A == row)){
-        return row, column;
-    }
-
+    
 }
 
 // FUNCTIONS
@@ -42,7 +59,7 @@ int OpenFile(char id_matrix) {
                 elements_count++;
             }
         }
-        Row_A, Column_A = MatrixValidation(id_matrix, elements_count);
+        row_a, column_a = MatrixValidation(id_matrix, elements_count);
 
     } else if (id_matrix == 'B') {
         printf("B\n");
@@ -53,7 +70,7 @@ int OpenFile(char id_matrix) {
                 elements_count++;
             }
         }
-        Row_B, Column_B = MatrixValidation(id_matrix, elements_count);
+        row_b, column_b = MatrixValidation(id_matrix, elements_count);
     }
     
     if(textfile == NULL) {
