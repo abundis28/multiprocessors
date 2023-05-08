@@ -10,8 +10,12 @@
 #define MAX_LINE_LENGTH 1000
 
 // GLOBAL VARIABLES
-int row_a, column_a, row_b, column_b;
-
+int row_a, col_a, row_b, col_b;
+double* A = NULL;
+double* B = NULL;
+double* C = NULL;
+FILE *textfile_a;
+FILE *textfile_b;
 
 // FUNCTIONS
 int MatrixValidation(char id_matrix, FILE *textfile){
@@ -24,62 +28,97 @@ int MatrixValidation(char id_matrix, FILE *textfile){
 
     int row = 0, column = 0;
     do{
-        printf("\nPlease write the number of rows matrix %c : ", id_matrix);
+        printf("Please write the number of rows matrix %c : ", id_matrix);
         scanf("%d", &row);
         printf("Please write the number of columns matrix %c : ", id_matrix);
         scanf("%d", &column);
         if(id_matrix == 'A'){
             if((row *column) <= elements_count) {
                 row_a = row;
-                column_a = column;
+                col_a = column;
                 break;
             }
             else
                 printf("\n ERROR: Please enter dimensions that not overpass %d.\n ", elements_count);
         }
         else if(id_matrix == 'B'){
-            if(((row *column) <= elements_count) && (column_a == row)) {
+            if(((row *column) <= elements_count) && (col_a == row)) {
                 row_b = row;
-                column_b = column;
+                col_b = column;
                 break;
             }
-            else if ((row *column) <= elements_count)
-                printf("\n ERROR: Wrong dimensions. Please take into account that the rows of matrix %c must match %d. \n", id_matrix, column_a);
+            else if ((row * column) <= elements_count)
+                printf("\n ERROR: Wrong dimensions. Please take into account that the rows of matrix %c must match %d. \n", id_matrix, col_a);
             else
-                printf("\n ERROR: Size too big, the dimensions must not overpass %d elements. Please take into account that the rows of matrix %c must match %d. \n", elements_count, id_matrix, column_a);
+                printf("\n ERROR: Size too big, the dimensions must not overpass %d elements. Please take into account that the rows of matrix %c must match %d. \n", elements_count, id_matrix, col_a);
         }
     } while (1);
 }
 
 int OpenFile(char id_matrix) {
-    printf("Opening file: ");
-    FILE    *textfile;
+    printf("\nOpening file: ");
     char    line[MAX_LINE_LENGTH];
 
     if (id_matrix == 'A'){
-        printf("A\n");
-        textfile = fopen("matrix/matrixA2500.txt", "r");
-        MatrixValidation(id_matrix, textfile);
-        printf("Successful print of matrix A with dimensions %d, %d. \n", row_a, column_a);
+        textfile_a = fopen("matrix/matrixA2500.txt", "r");
+        if(textfile_a == NULL) {
+            printf("Null file for matrix %c, try again!\n", id_matrix);
+            return 0;
+        }
+        MatrixValidation(id_matrix, textfile_a);
+        printf("Dimensions %d, %d are valid for matrix A\n", row_a, col_a);
+        fclose(textfile_a);
     } else if (id_matrix == 'B') {
-        printf("B\n");
-        textfile = fopen("matrix/matrixB2500.txt", "r");
-        MatrixValidation(id_matrix, textfile);
-        printf("Successful print of matrix B with dimensions %d, %d. \n", row_b, column_b);
+        textfile_b = fopen("matrix/matrixB2500.txt", "r");
+        if(textfile_b == NULL) {
+            printf("Null file for matrix %c, try again!\n", id_matrix);
+            return 0;
+        }
+        MatrixValidation(id_matrix, textfile_b);
+        printf("Dimensions %d, %d are valid for matrix B\n", row_b, col_b);
+        fclose(textfile_b);
     }
 
-    if(textfile == NULL) {
-        printf("Null file for matrix %c, try again!\n", id_matrix);
-        return 0;
-    }
-
-    fclose(textfile);
     printf("Successful load of matrix %c\n", id_matrix);
     return 1;
 }
 
-int CreateMatrix() {
-    return 0;
+void alloc_init_mem(int i){
+    // Alloc memory according to instruction set used
+    A = (double*)malloc(sizeof(double) * row_a * col_a);
+    B = (double*)malloc(sizeof(double) * row_b * col_b);
+    C = (double*)malloc(sizeof(double) * row_a * col_b);
+    printf("\nMemory allocated\n");
+}
+
+int CreateMatrix(char id_matrix) {
+    printf("\nCREATING MATRIX\n");
+    double fp;
+    if (id_matrix == 'A') {
+        for (int r = 0; r < row_a; r++) {
+            for (int c = 0; c < col_a; c++) {
+                if( A ) {
+                    fscanf(textfile_a, "%lf", &fp);
+                    printf("r: %d - c: %d - val: %lf\n",r,c,fp);
+                    *(A + r * row_a + c) = fp;
+                }
+            }
+        }
+        printf("\nMATRIX A\n");
+    }
+    else if (id_matrix == 'B') {
+        for (int r = 0; r < row_b; r++) {
+            for (int c = 0; c < col_b; c++) {
+                if( B ) {
+                    fscanf(textfile_b, "%d", &fp);
+                    printf("r: %d - c: %d - val: %lf\n",r,c,fp);
+                    *(B + r * row_b + c) = fp;
+                }
+            }
+        }
+        printf("\nMATRIX B\n");
+    }
+    return 1;
 }
 
 int LoadMatrixes() {
@@ -87,6 +126,7 @@ int LoadMatrixes() {
         printf("Error while loading matrixes.");
         return 0;
     }
+    alloc_init_mem(0);
     if(!CreateMatrix('A') || !CreateMatrix('B')) {
         printf("Error while creating matrixes.");
         return 0;
@@ -103,7 +143,27 @@ void CreateTable(){
     printf ("| % vs Serial  || -- | %d | %d | \n"); //Cambiar a datos guardados
 }
 
+void print_matrix() {
+    for (int r = 0; r < row_a; r++) {
+        for (int c = 0; c < col_a; c++) {
+            if( A )
+                printf("%lf", *(A + r*row_a + c));
+        }
+    }
+    for (int r = 0; r < row_b; r++) {
+        for (int c = 0; c < col_b; c++) {
+            if( B )
+                printf("%lf", *(A + r*row_b + c));
+        }
+    }
+}
+
+// MAIN
 int main(){
     int res = LoadMatrixes();
+
+    free(A);
+	free(B);
+	free(C);
     return 0;
 }
