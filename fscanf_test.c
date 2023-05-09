@@ -4,10 +4,10 @@
 int main() {
     FILE    *textfile;
     textfile = fopen("matrix/matrixA2500.txt", "r");
-    double fp;
+    double fp = 0;
     for (int i = 0; i < 2500; i++) {
-        fscanf(textfile, "%f", &fp);
-        printf("%f - %d\n", fp, sizeof(fp));
+        fscanf(textfile, "%lf\n", &fp);
+        printf("%lf\n", (double)fp);
     }
     return 0;
 }

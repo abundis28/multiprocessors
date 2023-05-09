@@ -10,7 +10,7 @@
 #define MAX_LINE_LENGTH 1000
 
 // GLOBAL VARIABLES
-int row_a, col_a, row_b, col_b;
+int row_a, col_a, row_b, col_b, elements_count;
 double* A = NULL;
 double* B = NULL;
 double* C = NULL;
@@ -20,7 +20,7 @@ FILE *textfile_b;
 // FUNCTIONS
 int MatrixValidation(char id_matrix, FILE *textfile){
     char ch;
-    int elements_count = 0;
+    elements_count = 0;
     for (ch = getc(textfile); ch != EOF; ch = getc(textfile)){
         if (ch == '\n')
             elements_count++;
@@ -53,11 +53,11 @@ int MatrixValidation(char id_matrix, FILE *textfile){
                 printf("\n ERROR: Size too big, the dimensions must not overpass %d elements. Please take into account that the rows of matrix %c must match %d. \n", elements_count, id_matrix, col_a);
         }
     } while (1);
+    return 1;
 }
 
 int OpenFile(char id_matrix) {
     printf("\nOpening file: ");
-    char    line[MAX_LINE_LENGTH];
 
     if (id_matrix == 'A'){
         textfile_a = fopen("matrix/matrixA2500.txt", "r");
@@ -67,7 +67,6 @@ int OpenFile(char id_matrix) {
         }
         MatrixValidation(id_matrix, textfile_a);
         printf("Dimensions %d, %d are valid for matrix A\n", row_a, col_a);
-        fclose(textfile_a);
     } else if (id_matrix == 'B') {
         textfile_b = fopen("matrix/matrixB2500.txt", "r");
         if(textfile_b == NULL) {
@@ -76,7 +75,6 @@ int OpenFile(char id_matrix) {
         }
         MatrixValidation(id_matrix, textfile_b);
         printf("Dimensions %d, %d are valid for matrix B\n", row_b, col_b);
-        fclose(textfile_b);
     }
 
     printf("Successful load of matrix %c\n", id_matrix);
@@ -93,28 +91,22 @@ void alloc_init_mem(int i){
 
 int CreateMatrix(char id_matrix) {
     printf("\nCREATING MATRIX\n");
-    double fp;
+    double fp = 0;
     if (id_matrix == 'A') {
-        for (int r = 0; r < row_a; r++) {
-            for (int c = 0; c < col_a; c++) {
-                if( A ) {
-                    fscanf(textfile_a, "%lf", &fp);
-                    printf("r: %d - c: %d - val: %lf\n",r,c,fp);
-                    *(A + r * row_a + c) = fp;
-                }
-            }
+        printf("%d\n", elements_count);
+        for (int i = 0; i < elements_count; i++) {
+            fscanf(textfile_a, "%lf\n", &fp);
+            printf("i: %d - val: %lf\n", i, (double)fp);
+            A[i] = (double)fp;
         }
         printf("\nMATRIX A\n");
     }
     else if (id_matrix == 'B') {
-        for (int r = 0; r < row_b; r++) {
-            for (int c = 0; c < col_b; c++) {
-                if( B ) {
-                    fscanf(textfile_b, "%d", &fp);
-                    printf("r: %d - c: %d - val: %lf\n",r,c,fp);
-                    *(B + r * row_b + c) = fp;
-                }
-            }
+        printf("%d\n", elements_count);
+        for (int i = 0; i < elements_count; i++) {
+            fscanf(textfile_b, "%lf\n", &fp);
+            // printf("i: %d - val: %lf\n", i, (double)fp);
+            B[i] = (double)fp;
         }
         printf("\nMATRIX B\n");
     }
@@ -147,20 +139,25 @@ void print_matrix() {
     for (int r = 0; r < row_a; r++) {
         for (int c = 0; c < col_a; c++) {
             if( A )
-                printf("%lf", *(A + r*row_a + c));
+                printf("%lf ", *(A + r*row_a + c));
         }
+        printf("\n");
     }
     for (int r = 0; r < row_b; r++) {
         for (int c = 0; c < col_b; c++) {
             if( B )
-                printf("%lf", *(A + r*row_b + c));
+                printf("%lf ", *(A + r*row_b + c));
         }
+        printf("\n");
     }
 }
 
 // MAIN
 int main(){
     int res = LoadMatrixes();
+
+    fclose(textfile_a);
+    fclose(textfile_b);
 
     free(A);
 	free(B);
