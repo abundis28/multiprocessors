@@ -92,7 +92,8 @@ int CreateMatrix(char id_matrix) {
     double fp = 0;
     if (id_matrix == 'A') {
         printf("%d\n", elements_count);
-        for (int i = 0; i < elements_count; i++) {
+        textfile_a = fopen("matrix/matrixA2500.txt", "r");
+        for (int i = 0; i < 2500; i++) {
             fscanf(textfile_a, "%lf\n", &fp);
             printf("i: %d - val: %lf\n", i, (double)fp);
             A[i] = (double)fp;
@@ -101,6 +102,7 @@ int CreateMatrix(char id_matrix) {
     }
     else if (id_matrix == 'B') {
         printf("%d\n", elements_count);
+        textfile_a = fopen("matrix/matrixB2500.txt", "r");
         for (int i = 0; i < elements_count; i++) {
             fscanf(textfile_b, "%lf\n", &fp);
             // printf("i: %d - val: %lf\n", i, (double)fp);
