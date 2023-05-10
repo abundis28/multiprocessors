@@ -33,24 +33,22 @@ int MatrixValidation(char id_matrix, FILE *textfile){
         printf("Please write the number of columns matrix %c : ", id_matrix);
         scanf("%d", &column);
         if(id_matrix == 'A'){
-            if((row *column) <= elements_count) {
+            if((row *column) == elements_count) {
                 row_a = row;
                 col_a = column;
                 break;
             }
             else
-                printf("\n ERROR: Please enter dimensions that not overpass %d.\n ", elements_count);
+                printf("\n ERROR: Please enter dimensions that multiply to %d.\n ", elements_count);
         }
         else if(id_matrix == 'B'){
-            if(((row *column) <= elements_count) && (col_a == row)) {
+            if(((row *column) == elements_count) && (col_a == row)) {
                 row_b = row;
                 col_b = column;
                 break;
             }
-            else if ((row * column) <= elements_count)
-                printf("\n ERROR: Wrong dimensions. Please take into account that the rows of matrix %c must match %d. \n", id_matrix, col_a);
             else
-                printf("\n ERROR: Size too big, the dimensions must not overpass %d elements. Please take into account that the rows of matrix %c must match %d. \n", elements_count, id_matrix, col_a);
+                printf("\n ERROR: Size does not match, the dimensions must be equal to %d elements. Please take into account that the rows of matrix %c must match %d. \n", elements_count, id_matrix, col_a);
         }
     } while (1);
     return 1;
