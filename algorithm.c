@@ -17,6 +17,9 @@ double* C = NULL;
 FILE *textfile_a;
 FILE *textfile_b;
 
+struct timespec start, finish;
+double elapsed;
+
 // FUNCTIONS
 int MatrixValidation(char id_matrix) {
     FILE *textfile;
@@ -133,6 +136,10 @@ void CreateTable() {
 }
 
 int MultiplyMatrixes() {
+    clock_gettime(CLOCK_REALTIME, &start);
+
+    clock_gettime(CLOCK_REALTIME, &finish);
+    elapsed = (finish.tv_sec - start.tv_sec) + (finish.tv_nsec - start.tv_nsec) / 1000000000L;
     return 1;
 }
 
