@@ -162,7 +162,9 @@ void PrintMatrix() {
 
 void WriteResultMatrixToTxt() {
     FILE *f = fopen("C.txt", "wb");
-    fwrite(C, sizeof(double), sizeof(C), f);
+    for (int i = 0; i < row_a * col_b; i++) {
+        fprintf(f, "%lf\n", C[i]);
+    }
     fclose(f);
 }
 
@@ -170,14 +172,14 @@ void WriteResultMatrixToTxt() {
 int main(){
     if (!OpenFile('A') || !OpenFile('B')) {
         printf("Error while loading the matrixes.");
-        exit( EXIT_FAILURE )
+        exit( EXIT_FAILURE );
     }
 
     AllocInitMemory(0);
 
     if (!CreateMatrix('A') || !CreateMatrix('B')) {
         printf("Error while creating the matrixes.");
-        exit( EXIT_FAILURE )
+        exit( EXIT_FAILURE );
     }
 
     printf("\nTime elapsed: %lf\n", MultiplyMatrixes());
