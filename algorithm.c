@@ -17,7 +17,7 @@ double* C = NULL;
 FILE *textfile_a;
 FILE *textfile_b;
 
-struct timespec start, finish;
+time_t start, finish;
 double elapsed;
 
 // FUNCTIONS
@@ -92,7 +92,7 @@ int OpenFile(char id_matrix) {
     return 1;
 }
 
-void alloc_init_mem(int i) {
+void AllocInitMemory(int i) {
     // Alloc memory according to instruction set used
     A = (double*)malloc(sizeof(double) * row_a * col_a);
     B = (double*)malloc(sizeof(double) * row_b * col_b);
@@ -101,27 +101,24 @@ void alloc_init_mem(int i) {
 }
 
 int CreateMatrix(char id_matrix) {
-    printf("\nCREATING MATRIX\n");
     double fp = 0;
     if (id_matrix == 'A') {
-        printf("%d\n", elements_count);
         textfile_a = fopen("matrix/matrixA2500.txt", "r");
         for (int i = 0; i < 2500; i++) {
             fscanf(textfile_a, "%lf\n", &fp);
             A[i] = (double)fp;
         }
         fclose(textfile_a);
-        printf("\nMATRIX A\n");
+        printf("\nSuccessful creation of matrix %c\n", id_matrix);
     }
     else if (id_matrix == 'B') {
-        printf("%d\n", elements_count);
         textfile_b = fopen("matrix/matrixB2500.txt", "r");
         for (int i = 0; i < elements_count; i++) {
             fscanf(textfile_b, "%lf\n", &fp);
             B[i] = (double)fp;
         }
         fclose(textfile_b);
-        printf("\nMATRIX B\n");
+        printf("\nSuccessful creation of matrix %c\n", id_matrix);
     }
     return 1;
 }
@@ -135,48 +132,77 @@ void CreateTable() {
     printf ("| % vs Serial  || -- | %d | %d | \n"); //Cambiar a datos guardados
 }
 
-int MultiplyMatrixes() {
-    clock_gettime(CLOCK_REALTIME, &start);
-
-    clock_gettime(CLOCK_REALTIME, &finish);
-    elapsed = (finish.tv_sec - start.tv_sec) + (finish.tv_nsec - start.tv_nsec) / 1000000000L;
-    return 1;
+double MultiplyMatrixes() {
+    start = clock();
+    for(int i=0; i<row_a ; i++){
+        for(int j=0; j<col_b; j++){
+            int sum =0;
+            if( A ) {
+                if( B ) {
+                    if( C ) {
+                        for(int k=0; k<row_b; k++){
+                            sum += (A[i * row_a + k] * B[k * row_b + j]);
+                        }
+                        C[i * row_a + j] = sum;
+                    }
+                }
+            }
+        }
+    }
+    finish = clock();
+    elapsed = (long)(finish - start);
+    printf("\nSuccessful multiplication of the matrixes\n");
+    return elapsed;
 }
 
-void print_matrix() {
+void PrintMatrix() {
+    // for (int r = 0; r < row_a; r++) {
+    //     for (int c = 0; c < col_a; c++) {
+    //         if( A )
+    //             printf("%lf ", *(A + r*row_a + c));
+    //     }
+    //     printf("\n");
+    // }
+    // for (int r = 0; r < row_b; r++) {
+    //     for (int c = 0; c < col_b; c++) {
+    //         if( B )
+    //             printf("%lf ", *(A + r*row_b + c));
+    //     }
+    //     printf("\n");
+    // }
+    printf("\n");
     for (int r = 0; r < row_a; r++) {
-        for (int c = 0; c < col_a; c++) {
-            if( A )
-                printf("%lf ", *(A + r*row_a + c));
-        }
-        printf("\n");
-    }
-    for (int r = 0; r < row_b; r++) {
         for (int c = 0; c < col_b; c++) {
-            if( B )
-                printf("%lf ", *(A + r*row_b + c));
+            if( C )
+                printf("%d ", (int)*(C + r * row_a + c));
         }
         printf("\n");
     }
+}
+
+void WriteResultMatrixToTxt() {
+    FILE *f = fopen("C.txt", "wb");
+    fwrite(C, sizeof(double), sizeof(C), f);
+    fclose(f);
 }
 
 // MAIN
 int main(){
     if (!OpenFile('A') || !OpenFile('B')) {
-        printf("Error while loading matrixes.");
-        return 0;
+        printf("Error while loading the matrixes.");
     }
 
-    alloc_init_mem(0);
+    AllocInitMemory(0);
 
     if (!CreateMatrix('A') || !CreateMatrix('B')) {
-        printf("Error while creating matrixes.");
-        return 0;
+        printf("Error while creating the matrixes.");
     }
 
-    if (!MultiplyMatrixes()) {
+    printf("\nTime elapsed: %lf\n", MultiplyMatrixes());
 
-    }
+    WriteResultMatrixToTxt();
+
+    PrintMatrix();
 
     free(A);
 	free(B);
