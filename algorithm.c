@@ -134,19 +134,13 @@ void CreateTable() {
 
 double MultiplyMatrixes() {
     start = clock();
-    for(int i=0; i<row_a ; i++){
-        for(int j=0; j<col_b; j++){
-            int sum =0;
-            if( A ) {
-                if( B ) {
-                    if( C ) {
-                        for(int k=0; k<row_b; k++){
-                            sum += (A[i * row_a + k] * B[k * row_b + j]);
-                        }
-                        C[i * row_a + j] = sum;
-                    }
-                }
+    for(int i=0; i < row_a ; i++){
+        for(int j=0; j < col_b; j++){
+            double sum =0;
+            for(int k=0; k<row_b; k++){
+                sum += (A[i * row_a + k] * B[k * row_b + j]);
             }
+            C[i * row_a + j] = sum;
         }
     }
     finish = clock();
@@ -156,27 +150,13 @@ double MultiplyMatrixes() {
 }
 
 void PrintMatrix() {
-    // for (int r = 0; r < row_a; r++) {
-    //     for (int c = 0; c < col_a; c++) {
-    //         if( A )
-    //             printf("%lf ", *(A + r*row_a + c));
-    //     }
-    //     printf("\n");
+    // printf("\n\n");
+    // for (int i = 0; i < elements_count; i++) {
+    //     printf("%lf \t//\t %lf\n", A[i], B[i]);
     // }
-    // for (int r = 0; r < row_b; r++) {
-    //     for (int c = 0; c < col_b; c++) {
-    //         if( B )
-    //             printf("%lf ", *(A + r*row_b + c));
-    //     }
-    //     printf("\n");
-    // }
-    printf("\n");
-    for (int r = 0; r < row_a; r++) {
-        for (int c = 0; c < col_b; c++) {
-            if( C )
-                printf("%d ", (int)*(C + r * row_a + c));
-        }
-        printf("\n");
+    printf("\n\n");
+    for (int i = 0; i < row_a * col_b; i++) {
+        printf("%lf\n", C[i]);
     }
 }
 
@@ -190,12 +170,14 @@ void WriteResultMatrixToTxt() {
 int main(){
     if (!OpenFile('A') || !OpenFile('B')) {
         printf("Error while loading the matrixes.");
+        exit( EXIT_FAILURE )
     }
 
     AllocInitMemory(0);
 
     if (!CreateMatrix('A') || !CreateMatrix('B')) {
         printf("Error while creating the matrixes.");
+        exit( EXIT_FAILURE )
     }
 
     printf("\nTime elapsed: %lf\n", MultiplyMatrixes());
