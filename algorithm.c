@@ -104,7 +104,8 @@ int CreateMatrix(char id_matrix) {
     double fp = 0;
     if (id_matrix == 'A') {
         textfile_a = fopen("matrix/matrixA2500.txt", "r");
-        for (int i = 0; i < 2500; i++) {
+        printf("\nCreating matrix A\n");
+        for (int i = 0; i < elements_count; i++) {
             fscanf(textfile_a, "%lf\n", &fp);
             A[i] = (double)fp;
         }
@@ -113,6 +114,7 @@ int CreateMatrix(char id_matrix) {
     }
     else if (id_matrix == 'B') {
         textfile_b = fopen("matrix/matrixB2500.txt", "r");
+        printf("\nCreating matrix B\n");
         for (int i = 0; i < elements_count; i++) {
             fscanf(textfile_b, "%lf\n", &fp);
             B[i] = (double)fp;
@@ -134,12 +136,16 @@ void CreateTable() {
 
 double MultiplyMatrixes() {
     start = clock();
+    // printf("\n");
     for(int i=0; i < row_a ; i++){
         for(int j=0; j < col_b; j++){
             double sum =0;
-            for(int k=0; k<row_b; k++){
-                sum += (A[i * row_a + k] * B[k * row_b + j]);
+            // printf("Cell: %d - %d:\n", i, j);
+            for(int k=0; k<row_b; k++){              
+                sum += (A[i * col_a + k] * B[k * col_b + j]);
+                // printf("%lf(%d,%d) * %lf(%d,%d) = %lf\n", A[i * col_a + k], i, k, B[k * col_b + j], k, j, sum);
             }
+            // printf("\n");
             C[i * row_a + j] = sum;
         }
     }
@@ -185,8 +191,6 @@ int main(){
     printf("\nTime elapsed: %lf\n", MultiplyMatrixes());
 
     WriteResultMatrixToTxt();
-
-    PrintMatrix();
 
     free(A);
 	free(B);
