@@ -130,12 +130,16 @@ int CreateMatrix(char id_matrix) {
 }
 
 void CreateTable() {
-    printf ("| Run  || Serial | Parallel 1 | Parallel 2 | \n");  
+    printf ("| Run  ||       Serial       | Parallel 1 | Parallel 2 |\n");  
+    printf("----------------------------------------------------------\n"); 
+    
     for (int i = 0; i < 5; i++)  {  
-        printf ("| %sld || %lf | %lf | %lf | \n ", i+1, original[i], posix[i], open[i]); //Cambiar a datos guardados   
-    }  
-    printf ("| Average  || %lf | %lf | %lf | \n", average_original/5, average_posix/5, average_open/5); //Cambiar a datos guardados
-    printf ("| % vs Serial  || -- | %d | %d | \n"); //Cambiar a datos guardados
+        printf ("|   %d  || %7.10lf | %7.10lf | %7.10lf |\n", i+1, original[i], posix[i], open[i]); //Cambiar a datos guardados   
+    } 
+
+    printf("----------------------------------------------------------\n"); 
+    printf ("| Avg  || %7.10lf | %7.10lf | %7.10lf |\n", average_original/5, average_posix/5, average_open/5); //Cambiar a datos guardados
+    printf ("| %%Eff ||      ---      | %d | %d | \n"); //Cambiar a datos guardados
 }
 
 double MultiplyMatrixes() {
@@ -194,7 +198,7 @@ int main(){
 
     for(int i = 0; i < 5; i++){
         original[i] = MultiplyMatrixes();
-        average_open += original[i];
+        average_original += original[i];
         //printf("\nTime elapsed: %lf\n", original[i]);
     }
 
