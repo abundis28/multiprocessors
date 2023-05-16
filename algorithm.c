@@ -1,5 +1,5 @@
 //Functions with camel, variables with underscore
-
+//FOR LARGE MATRIX 1024x1024  // 512x2048 // 256x4096
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
@@ -17,8 +17,12 @@ double* C = NULL;
 FILE *textfile_a;
 FILE *textfile_b;
 
-time_t start, finish;
+clock_t start, finish;
 double elapsed;
+
+//TIMESTAMP VARIABLES
+double original[5], posix[5], open[5];
+double average_original, average_posix, average_open;
 
 // FUNCTIONS
 int MatrixValidation(char id_matrix) {
@@ -69,7 +73,7 @@ int OpenFile(char id_matrix) {
     printf("\nOpening file: ");
 
     if (id_matrix == 'A'){
-        textfile_a = fopen("matrix/matrixA2500.txt", "r");
+        textfile_a = fopen("matrix/matrixA1048576.txt", "r");
         if(textfile_a == NULL) {
             printf("Null file for matrix %c, try again!\n", id_matrix);
             return 0;
@@ -78,7 +82,7 @@ int OpenFile(char id_matrix) {
         fclose(textfile_a);
         printf("Dimensions %d, %d are valid for matrix A\n", row_a, col_a);
     } else if (id_matrix == 'B') {
-        textfile_b = fopen("matrix/matrixB2500.txt", "r");
+        textfile_b = fopen("matrix/matrixB1048576.txt", "r");
         if(textfile_b == NULL) {
             printf("Null file for matrix %c, try again!\n", id_matrix);
             return 0;
@@ -103,7 +107,7 @@ void AllocInitMemory(int i) {
 int CreateMatrix(char id_matrix) {
     double fp = 0;
     if (id_matrix == 'A') {
-        textfile_a = fopen("matrix/matrixA2500.txt", "r");
+        textfile_a = fopen("matrix/matrixA1048576.txt", "r");
         printf("\nCreating matrix A\n");
         for (int i = 0; i < elements_count; i++) {
             fscanf(textfile_a, "%lf\n", &fp);
@@ -113,7 +117,7 @@ int CreateMatrix(char id_matrix) {
         printf("\nSuccessful creation of matrix %c\n", id_matrix);
     }
     else if (id_matrix == 'B') {
-        textfile_b = fopen("matrix/matrixB2500.txt", "r");
+        textfile_b = fopen("matrix/matrixB1048576.txt", "r");
         printf("\nCreating matrix B\n");
         for (int i = 0; i < elements_count; i++) {
             fscanf(textfile_b, "%lf\n", &fp);
@@ -128,9 +132,9 @@ int CreateMatrix(char id_matrix) {
 void CreateTable() {
     printf ("| Run  || Serial | Parallel 1 | Parallel 2 | \n");  
     for (int i = 0; i < 5; i++)  {  
-        printf ("| %d || %d | %d | %d | \n ", i, i, i, i); //Cambiar a datos guardados   
+        printf ("| %sld || %lf | %lf | %lf | \n ", i+1, original[i], posix[i], open[i]); //Cambiar a datos guardados   
     }  
-    printf ("| Average  || %d | %d | %d | \n"); //Cambiar a datos guardados
+    printf ("| Average  || %lf | %lf | %lf | \n", average_original/5, average_posix/5, average_open/5); //Cambiar a datos guardados
     printf ("| % vs Serial  || -- | %d | %d | \n"); //Cambiar a datos guardados
 }
 
@@ -150,7 +154,7 @@ double MultiplyMatrixes() {
         }
     }
     finish = clock();
-    elapsed = (long)(finish - start);
+    elapsed = (finish - start);
     printf("\nSuccessful multiplication of the matrixes\n");
     return elapsed;
 }
@@ -188,9 +192,14 @@ int main(){
         exit( EXIT_FAILURE );
     }
 
-    printf("\nTime elapsed: %lf\n", MultiplyMatrixes());
+    for(int i = 0; i < 5; i++){
+        original[i] = MultiplyMatrixes();
+        average_open += original[i];
+        //printf("\nTime elapsed: %lf\n", original[i]);
+    }
 
     WriteResultMatrixToTxt();
+    CreateTable();
 
     free(A);
 	free(B);
