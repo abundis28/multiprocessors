@@ -177,7 +177,7 @@ void PrintMatrix() {
 void WriteResultMatrixToTxt() {
     FILE *f = fopen("C.txt", "wb");
     for (int i = 0; i < row_a * col_b; i++) {
-        fprintf(f, "%lf\n", C[i]);
+        fprintf(f, "%.10lf\n", C[i]);
     }
     fclose(f);
 }
