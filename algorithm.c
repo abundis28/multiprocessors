@@ -133,14 +133,15 @@ int CreateMatrix(char id_matrix) {
     return 1;
 }
 
-void TransposeMatrixB() {
+int TransposeMatrixB() {
     printf("Transposing Matrix");
     for (int i = 0; i < row_b; ++i) {
         for (int j = 0; j < col_b; ++j) {
             Bt[(j * row_b) + i] = B[(i * col_b) + j];
         }
     }
-    printf("Successful Transposing Matrix");
+    printf("\nSuccessful Transposing Matrix\n");
+    return 1;
 }
 
 void CreateTable() {
@@ -212,7 +213,11 @@ int main(){
         //printf("\nTime elapsed: %lf\n", original[i]);
     }
 
-    TransposeMatrixB();
+    if (!TransposeMatrixB()) {
+        printf("Error while transposing second matrix.");
+        exit( EXIT_FAILURE );
+    }
+
     WriteResultMatrixToTxt();
     CreateTable();
 
