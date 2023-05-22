@@ -104,9 +104,9 @@ int OpenFile(char id_matrix) {
 void AllocInitMemory(int i) {
     // Alloc memory according to instruction set used
     A = (double*)malloc(sizeof(double) * row_a * col_a);
-    Bt= (double*)malloc(sizeof(double) * row_b * col_b);
+    Bt= (double*)malloc(sizeof(double) * row_bt * col_bt);
     B = (double*)malloc(sizeof(double) * row_b * col_b);
-    C = (double*)malloc(sizeof(double) * row_a * col_bt);
+    C = (double*)malloc(sizeof(double) * row_a * col_b);
     printf("\nMemory allocated\n");
 }
 
@@ -163,11 +163,11 @@ double MultiplyMatrixes() {
     start = clock();
     // printf("\n");
     for(int i=0; i < row_a ; i++){
-        for(int j=0; j < col_bt; j++){
+        for(int j=0; j < col_b; j++){
             double sum =0;
             // printf("Cell: %d - %d:\n", i, j);
-            for(int k=0; k<row_bt; k++){              
-                sum += (A[i * col_a + k] * Bt[i * col_a + k]);
+            for(int k=0; k<row_b; k++){              
+                sum += (A[i * col_a + k] * Bt[j * col_a + k]);
                 // printf("%lf(%d,%d) * %lf(%d,%d) = %lf\n", A[i * col_a + k], i, k, B[k * col_b + j], k, j, sum);
             }
             // printf("\n");
@@ -187,9 +187,9 @@ void PrintMatrixes() {
     }
 }
 
-void PrintResultMatrix() {
+void PrintResultMatrix(){ 
     printf("\n\n");
-    for (int i = 0; i < row_a * col_bt; i++) {
+    for (int i = 0; i < row_a * col_b; i++) {
         printf("%lf\n", C[i]);
     }
 }
@@ -224,17 +224,15 @@ int main(){
     for(int i = 0; i < 5; i++){
         original[i] = MultiplyMatrixes();
         average_original += original[i];
-        // printf("\nTime elapsed: %lf\n", original[i]);
+        printf("\nTime elapsed: %lf\n", original[i]);
     }
 
-    PrintMatrixes();
-    PrintResultMatrix();
-    // WriteResultMatrixToTxt();
-    // CreateTable();
+    WriteResultMatrixToTxt();
+    CreateTable();
 
     free(A);
-	free(B);
-    free(Bt);
+	free(Bt);
+    free(B);
 	free(C);
     
     return 0;
