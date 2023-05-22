@@ -12,6 +12,7 @@
 // GLOBAL VARIABLES
 int row_a, col_a, row_b, col_b, elements_count;
 double* A = NULL;
+double* Bt = NULL;
 double* B = NULL;
 double* C = NULL;
 FILE *textfile_a;
@@ -73,7 +74,7 @@ int OpenFile(char id_matrix) {
     printf("\nOpening file: ");
 
     if (id_matrix == 'A'){
-        textfile_a = fopen("matrix/matrixA1048576.txt", "r");
+        textfile_a = fopen("matrix/matrixA8.txt", "r");
         if(textfile_a == NULL) {
             printf("Null file for matrix %c, try again!\n", id_matrix);
             return 0;
@@ -82,7 +83,7 @@ int OpenFile(char id_matrix) {
         fclose(textfile_a);
         printf("Dimensions %d, %d are valid for matrix A\n", row_a, col_a);
     } else if (id_matrix == 'B') {
-        textfile_b = fopen("matrix/matrixB1048576.txt", "r");
+        textfile_b = fopen("matrix/matrixB8.txt", "r");
         if(textfile_b == NULL) {
             printf("Null file for matrix %c, try again!\n", id_matrix);
             return 0;
@@ -99,6 +100,7 @@ int OpenFile(char id_matrix) {
 void AllocInitMemory(int i) {
     // Alloc memory according to instruction set used
     A = (double*)malloc(sizeof(double) * row_a * col_a);
+    Bt= (double*)malloc(sizeof(double) * row_b * col_b);
     B = (double*)malloc(sizeof(double) * row_b * col_b);
     C = (double*)malloc(sizeof(double) * row_a * col_b);
     printf("\nMemory allocated\n");
@@ -127,6 +129,16 @@ int CreateMatrix(char id_matrix) {
         printf("\nSuccessful creation of matrix %c\n", id_matrix);
     }
     return 1;
+}
+
+void TransposeMatrix() {
+    printf("Transposing Matrix");
+    for (int i = 0; i < row_b; ++i) {
+        for (int j = 0; j < col_b; ++j) {
+            Bt[(j * row_b) + i] = B[(i * col_b) + j];
+        }
+    }
+    printf("Successful Transposing Matrix");
 }
 
 void CreateTable() {
@@ -163,14 +175,10 @@ double MultiplyMatrixes() {
     return elapsed;
 }
 
-void PrintMatrix() {
-    // printf("\n\n");
-    // for (int i = 0; i < elements_count; i++) {
-    //     printf("%lf \t//\t %lf\n", A[i], B[i]);
-    // }
+void PrintMatrixes() {
     printf("\n\n");
-    for (int i = 0; i < row_a * col_b; i++) {
-        printf("%lf\n", C[i]);
+    for (int i = 0; i < elements_count; i++) {
+        printf("%lf \t//\t %lf \t//\t %lf\n", A[i], B[i], Bt[i]);
     }
 }
 
@@ -201,7 +209,7 @@ int main(){
         average_original += original[i];
         //printf("\nTime elapsed: %lf\n", original[i]);
     }
-
+    
     WriteResultMatrixToTxt();
     CreateTable();
 
