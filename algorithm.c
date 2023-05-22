@@ -7,7 +7,9 @@
 #include <immintrin.h>
 
 // CONSTANTS
-#define MAX_LINE_LENGTH 1000
+static const int MAX_LINE_LENGTH = 1000;
+const char *fileA = "matrix/matrixA8.txt";
+const char *fileB = "matrix/matrixB8.txt";
 
 // GLOBAL VARIABLES
 int row_a, col_a, row_b, col_b, elements_count;
@@ -74,7 +76,7 @@ int OpenFile(char id_matrix) {
     printf("\nOpening file: ");
 
     if (id_matrix == 'A'){
-        textfile_a = fopen("matrix/matrixA8.txt", "r");
+        textfile_a = fopen(fileA, "r");
         if(textfile_a == NULL) {
             printf("Null file for matrix %c, try again!\n", id_matrix);
             return 0;
@@ -83,7 +85,7 @@ int OpenFile(char id_matrix) {
         fclose(textfile_a);
         printf("Dimensions %d, %d are valid for matrix A\n", row_a, col_a);
     } else if (id_matrix == 'B') {
-        textfile_b = fopen("matrix/matrixB8.txt", "r");
+        textfile_b = fopen(fileB, "r");
         if(textfile_b == NULL) {
             printf("Null file for matrix %c, try again!\n", id_matrix);
             return 0;
@@ -109,7 +111,7 @@ void AllocInitMemory(int i) {
 int CreateMatrix(char id_matrix) {
     double fp = 0;
     if (id_matrix == 'A') {
-        textfile_a = fopen("matrix/matrixA1048576.txt", "r");
+        textfile_a = fopen(fileA, "r");
         printf("\nCreating matrix A\n");
         for (int i = 0; i < elements_count; i++) {
             fscanf(textfile_a, "%lf\n", &fp);
@@ -119,7 +121,7 @@ int CreateMatrix(char id_matrix) {
         printf("\nSuccessful creation of matrix %c\n", id_matrix);
     }
     else if (id_matrix == 'B') {
-        textfile_b = fopen("matrix/matrixB1048576.txt", "r");
+        textfile_b = fopen(fileB, "r");
         printf("\nCreating matrix B\n");
         for (int i = 0; i < elements_count; i++) {
             fscanf(textfile_b, "%lf\n", &fp);
@@ -131,7 +133,7 @@ int CreateMatrix(char id_matrix) {
     return 1;
 }
 
-void TransposeMatrix() {
+void TransposeMatrixB() {
     printf("Transposing Matrix");
     for (int i = 0; i < row_b; ++i) {
         for (int j = 0; j < col_b; ++j) {
@@ -209,7 +211,8 @@ int main(){
         average_original += original[i];
         //printf("\nTime elapsed: %lf\n", original[i]);
     }
-    
+
+    TransposeMatrixB();
     WriteResultMatrixToTxt();
     CreateTable();
 
