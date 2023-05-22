@@ -12,7 +12,7 @@ const char *fileA = "matrix/matrixA8.txt";
 const char *fileB = "matrix/matrixB8.txt";
 
 // GLOBAL VARIABLES
-int row_a, col_a, row_b, col_b, elements_count;
+int row_a, col_a, row_b, col_b, row_bt, col_bt, elements_count;
 double* A = NULL;
 double* Bt = NULL;
 double* B = NULL;
@@ -54,6 +54,8 @@ int MatrixValidation(char id_matrix) {
             if((row *column) == elements_count) {
                 row_a = row;
                 col_a = column;
+                row_bt = row;
+                col_bt = column;
                 break;
             }
             else
@@ -104,7 +106,7 @@ void AllocInitMemory(int i) {
     A = (double*)malloc(sizeof(double) * row_a * col_a);
     Bt= (double*)malloc(sizeof(double) * row_b * col_b);
     B = (double*)malloc(sizeof(double) * row_b * col_b);
-    C = (double*)malloc(sizeof(double) * row_a * col_b);
+    C = (double*)malloc(sizeof(double) * row_a * col_bt);
     printf("\nMemory allocated\n");
 }
 
@@ -161,11 +163,11 @@ double MultiplyMatrixes() {
     start = clock();
     // printf("\n");
     for(int i=0; i < row_a ; i++){
-        for(int j=0; j < col_b; j++){
+        for(int j=0; j < col_bt; j++){
             double sum =0;
             // printf("Cell: %d - %d:\n", i, j);
-            for(int k=0; k<row_b; k++){              
-                sum += (A[i * col_a + k] * B[k * col_b + j]);
+            for(int k=0; k<row_bt; k++){              
+                sum += (A[i * col_a + k] * Bt[i * col_a + k]);
                 // printf("%lf(%d,%d) * %lf(%d,%d) = %lf\n", A[i * col_a + k], i, k, B[k * col_b + j], k, j, sum);
             }
             // printf("\n");
@@ -185,9 +187,16 @@ void PrintMatrixes() {
     }
 }
 
+void PrintResultMatrix() {
+    printf("\n\n");
+    for (int i = 0; i < row_a * col_bt; i++) {
+        printf("%lf\n", C[i]);
+    }
+}
+
 void WriteResultMatrixToTxt() {
     FILE *f = fopen("C.txt", "wb");
-    for (int i = 0; i < row_a * col_b; i++) {
+    for (int i = 0; i < row_a * col_bt; i++) {
         fprintf(f, "%.10lf\n", C[i]);
     }
     fclose(f);
@@ -207,22 +216,26 @@ int main(){
         exit( EXIT_FAILURE );
     }
 
-    for(int i = 0; i < 5; i++){
-        original[i] = MultiplyMatrixes();
-        average_original += original[i];
-        //printf("\nTime elapsed: %lf\n", original[i]);
-    }
-
     if (!TransposeMatrixB()) {
         printf("Error while transposing second matrix.");
         exit( EXIT_FAILURE );
     }
 
-    WriteResultMatrixToTxt();
-    CreateTable();
+    for(int i = 0; i < 5; i++){
+        original[i] = MultiplyMatrixes();
+        average_original += original[i];
+        // printf("\nTime elapsed: %lf\n", original[i]);
+    }
+
+    PrintMatrixes();
+    PrintResultMatrix();
+    // WriteResultMatrixToTxt();
+    // CreateTable();
 
     free(A);
 	free(B);
+    free(Bt);
 	free(C);
+    
     return 0;
 }
