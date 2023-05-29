@@ -97,13 +97,15 @@ int OpenFile(char id_matrix) {
     return 1;
 }
 
-void AllocInitMemory() {
+int AllocInitMemory() {
     // Alloc memory according to instruction set used
     A = (double*)malloc(sizeof(double) * row_a * col_a);
     Bt= (double*)malloc(sizeof(double) * row_bt * col_bt);
     B = (double*)malloc(sizeof(double) * row_b * col_b);
     C = (double*)malloc(sizeof(double) * row_a * col_b);
     printf("Memory allocated\n");
+
+    return 1;
 }
 
 int CreateMatrix(char id_matrix) {
@@ -181,12 +183,21 @@ void PrintResultMatrix() {
     }
 }
 
-void WriteResultMatrixToTxt() {
+int WriteResultMatrixToTxt() {
     FILE *f = fopen("C.txt", "wb");
     for (int i = 0; i < row_a * row_a; i++) {
         fprintf(f, "%.10lf\n", C[i]);
     }
     fclose(f);
+
+    return 1;
+}
+
+int FreeAllocatedMemory() {
+    free(A);
+	free(Bt);
+    free(B);
+	free(C);
 }
 
 // MAIN
@@ -196,7 +207,10 @@ int main(){
         exit( EXIT_FAILURE );
     }
 
-    AllocInitMemory();
+    if (!AllocInitMemory()) {
+        printf("Error while allocating memory.\n\n");
+        exit( EXIT_FAILURE );
+    }
 
     if (!CreateMatrix('A') || !CreateMatrix('B')) {
         printf("Error while creating the matrixes.\n\n");
@@ -204,7 +218,7 @@ int main(){
     }
 
     if (!TransposeMatrixB()) {
-        printf("Error while transposing second matrix.\n\nx");
+        printf("Error while transposing second matrix.\n\n");
         exit( EXIT_FAILURE );
     }
 
@@ -214,13 +228,17 @@ int main(){
     }
     printf("\nSuccessful sequential multiplication of the matrixes\n\n");
 
-    WriteResultMatrixToTxt();
+    if (!WriteResultMatrixToTxt()) {
+        printf("Error while writing result matrix to txt file.\n\n");
+        exit( EXIT_FAILURE );
+    }
+    
     CreateTable();
 
-    free(A);
-	free(Bt);
-    free(B);
-	free(C);
+    if (!FreeAllocatedMemory()) {
+        printf("Error while freeing allocated memory.\n\n");
+        exit( EXIT_FAILURE );
+    }
     
     return 0;
 }
