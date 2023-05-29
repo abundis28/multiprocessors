@@ -1,4 +1,5 @@
-//Functions with camel, variables with underscore
+//FOR LARGE MATRIX 1024x1024  // 512x2048 // 256x4096
+// gcc algorithm.c -o algorithm -std=c99 && ./algorithm 
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -7,18 +8,22 @@
 #include <immintrin.h>
 
 // CONSTANTS
-#define MAX_LINE_LENGTH 1000
+static const int MAX_LINE_LENGTH = 1000;
+const char *fileA = "matrixA.txt";
+const char *fileB = "matrixB.txt";
 
 // GLOBAL VARIABLES
-int row_a, col_a, row_b, col_b, elements_count;
+int row_a, col_a, row_b, col_b, row_bt, col_bt, elements_count;
 double* A = NULL;
+double* Bt = NULL;
 double* B = NULL;
 double* C = NULL;
 FILE *textfile_a;
 FILE *textfile_b;
-
-time_t start, finish;
+clock_t start, finish;
 double elapsed;
+double original[5], posix[5], open[5];
+double average_original, average_posix, average_open;
 
 // FUNCTIONS
 int MatrixValidation(char id_matrix) {
@@ -47,6 +52,8 @@ int MatrixValidation(char id_matrix) {
             if((row *column) == elements_count) {
                 row_a = row;
                 col_a = column;
+                row_bt = row;
+                col_bt = column;
                 break;
             }
             else
@@ -66,10 +73,8 @@ int MatrixValidation(char id_matrix) {
 }
 
 int OpenFile(char id_matrix) {
-    printf("\nOpening file: ");
-
     if (id_matrix == 'A'){
-        textfile_a = fopen("matrix/matrixA2500.txt", "r");
+        textfile_a = fopen(fileA, "r");
         if(textfile_a == NULL) {
             printf("Null file for matrix %c, try again!\n", id_matrix);
             return 0;
@@ -78,7 +83,7 @@ int OpenFile(char id_matrix) {
         fclose(textfile_a);
         printf("Dimensions %d, %d are valid for matrix A\n", row_a, col_a);
     } else if (id_matrix == 'B') {
-        textfile_b = fopen("matrix/matrixB2500.txt", "r");
+        textfile_b = fopen(fileB, "r");
         if(textfile_b == NULL) {
             printf("Null file for matrix %c, try again!\n", id_matrix);
             return 0;
@@ -88,124 +93,134 @@ int OpenFile(char id_matrix) {
         printf("Dimensions %d, %d are valid for matrix B\n", row_b, col_b);
     }
 
-    printf("Successful load of matrix %c\n", id_matrix);
+    printf("Successful load of matrix %c\n\n", id_matrix);
     return 1;
 }
 
-void AllocInitMemory(int i) {
+void AllocInitMemory() {
     // Alloc memory according to instruction set used
     A = (double*)malloc(sizeof(double) * row_a * col_a);
+    Bt= (double*)malloc(sizeof(double) * row_bt * col_bt);
     B = (double*)malloc(sizeof(double) * row_b * col_b);
     C = (double*)malloc(sizeof(double) * row_a * col_b);
-    printf("\nMemory allocated\n");
+    printf("Memory allocated\n");
 }
 
 int CreateMatrix(char id_matrix) {
     double fp = 0;
     if (id_matrix == 'A') {
-        textfile_a = fopen("matrix/matrixA2500.txt", "r");
-        for (int i = 0; i < 2500; i++) {
+        textfile_a = fopen(fileA, "r");
+        for (int i = 0; i < elements_count; i++) {
             fscanf(textfile_a, "%lf\n", &fp);
             A[i] = (double)fp;
         }
         fclose(textfile_a);
-        printf("\nSuccessful creation of matrix %c\n", id_matrix);
     }
     else if (id_matrix == 'B') {
-        textfile_b = fopen("matrix/matrixB2500.txt", "r");
+        textfile_b = fopen(fileB, "r");
         for (int i = 0; i < elements_count; i++) {
             fscanf(textfile_b, "%lf\n", &fp);
             B[i] = (double)fp;
         }
         fclose(textfile_b);
-        printf("\nSuccessful creation of matrix %c\n", id_matrix);
     }
+    printf("\nSuccessful creation of matrix %c\n", id_matrix);
+    return 1;
+}
+
+int TransposeMatrixB() {
+    for (int i = 0; i < row_b; ++i) {
+        for (int j = 0; j < col_b; ++j) {
+            Bt[(j * row_b) + i] = B[(i * col_b) + j];
+        }
+    }
+    printf("\nSuccessful transposing of Matrix B\n");
     return 1;
 }
 
 void CreateTable() {
-    printf ("| Run  || Serial | Parallel 1 | Parallel 2 | \n");  
+    printf ("| Run  ||       Serial       | Parallel 1 | Parallel 2 |\n");  
+    printf("----------------------------------------------------------\n"); 
+    
     for (int i = 0; i < 5; i++)  {  
-        printf ("| %d || %d | %d | %d | \n ", i, i, i, i); //Cambiar a datos guardados   
-    }  
-    printf ("| Average  || %d | %d | %d | \n"); //Cambiar a datos guardados
-    printf ("| % vs Serial  || -- | %d | %d | \n"); //Cambiar a datos guardados
+        printf ("|   %d  || %7.10lf | %7.10lf | %7.10lf |\n", i+1, original[i], posix[i], open[i]); //Cambiar a datos guardados   
+    } 
+
+    printf("----------------------------------------------------------\n"); 
+    printf ("| Avg  || %7.10lf | %7.10lf | %7.10lf |\n", average_original/5, average_posix/5, average_open/5); //Cambiar a datos guardados
+    printf ("| %%Eff ||      ---      | %d | %d | \n"); //Cambiar a datos guardados
 }
 
 double MultiplyMatrixes() {
     start = clock();
-    for(int i=0; i<row_a ; i++){
-        for(int j=0; j<col_b; j++){
-            int sum =0;
-            if( A ) {
-                if( B ) {
-                    if( C ) {
-                        for(int k=0; k<row_b; k++){
-                            sum += (A[i * row_a + k] * B[k * row_b + j]);
-                        }
-                        C[i * row_a + j] = sum;
-                    }
-                }
+    for(int i = 0; i < row_a ; i++){
+        for(int j = 0; j < col_b; j++){
+            double sum = 0;
+            for(int k = 0; k < row_b; k++){              
+                sum += (A[i * col_a + k] * Bt[j * col_a + k]);
             }
+            C[i * row_a + j] = sum;
         }
     }
     finish = clock();
-    elapsed = (long)(finish - start);
-    printf("\nSuccessful multiplication of the matrixes\n");
+    elapsed = (finish - start);
     return elapsed;
 }
 
-void PrintMatrix() {
-    // for (int r = 0; r < row_a; r++) {
-    //     for (int c = 0; c < col_a; c++) {
-    //         if( A )
-    //             printf("%lf ", *(A + r*row_a + c));
-    //     }
-    //     printf("\n");
-    // }
-    // for (int r = 0; r < row_b; r++) {
-    //     for (int c = 0; c < col_b; c++) {
-    //         if( B )
-    //             printf("%lf ", *(A + r*row_b + c));
-    //     }
-    //     printf("\n");
-    // }
-    printf("\n");
-    for (int r = 0; r < row_a; r++) {
-        for (int c = 0; c < col_b; c++) {
-            if( C )
-                printf("%d ", (int)*(C + r * row_a + c));
-        }
-        printf("\n");
+void PrintMatrixes() {
+    printf("\n\n");
+    for (int i = 0; i < elements_count; i++) {
+        printf("%lf \t//\t %lf \t//\t %lf\n", A[i], B[i], Bt[i]);
+    }
+}
+
+void PrintResultMatrix() { 
+    printf("\n\n");
+    for (int i = 0; i < row_a * row_a; i++) {
+        printf("%lf\n", C[i]);
     }
 }
 
 void WriteResultMatrixToTxt() {
     FILE *f = fopen("C.txt", "wb");
-    fwrite(C, sizeof(double), sizeof(C), f);
+    for (int i = 0; i < row_a * row_a; i++) {
+        fprintf(f, "%.10lf\n", C[i]);
+    }
     fclose(f);
 }
 
 // MAIN
 int main(){
     if (!OpenFile('A') || !OpenFile('B')) {
-        printf("Error while loading the matrixes.");
+        printf("Error while loading the matrixes.\n\n");
+        exit( EXIT_FAILURE );
     }
 
-    AllocInitMemory(0);
+    AllocInitMemory();
 
     if (!CreateMatrix('A') || !CreateMatrix('B')) {
-        printf("Error while creating the matrixes.");
+        printf("Error while creating the matrixes.\n\n");
+        exit( EXIT_FAILURE );
     }
 
-    printf("\nTime elapsed: %lf\n", MultiplyMatrixes());
+    if (!TransposeMatrixB()) {
+        printf("Error while transposing second matrix.\n\nx");
+        exit( EXIT_FAILURE );
+    }
+
+    for(int i = 0; i < 5; i++){
+        original[i] = MultiplyMatrixes();
+        average_original += original[i];
+    }
+    printf("\nSuccessful sequential multiplication of the matrixes\n\n");
 
     WriteResultMatrixToTxt();
-
-    PrintMatrix();
+    CreateTable();
 
     free(A);
-	free(B);
+	free(Bt);
+    free(B);
 	free(C);
+    
     return 0;
 }
