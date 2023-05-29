@@ -254,7 +254,9 @@ int main(){
 
     for(int i = 0; i < 5; i++){
         original[i] = MultiplyMatSeq();
+        open[i] = MultiplyMatOpenMP();
         average_original += original[i];
+        average_open += open[i];
     }
     printf("\nSuccessful sequential multiplication of the matrixes\n\n");
 
