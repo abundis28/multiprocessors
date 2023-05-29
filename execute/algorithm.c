@@ -140,7 +140,7 @@ int TransposeMatrixB() {
     return 1;
 }
 
-void CreateTable() {
+int CreateTable() {
     printf ("| Run  ||       Serial       | Parallel 1 | Parallel 2 |\n");  
     printf("----------------------------------------------------------\n"); 
     
@@ -151,6 +151,8 @@ void CreateTable() {
     printf("----------------------------------------------------------\n"); 
     printf ("| Avg  || %7.10lf | %7.10lf | %7.10lf |\n", average_original/5, average_posix/5, average_open/5); //Cambiar a datos guardados
     printf ("| %%Eff ||      ---      | %d | %d | \n"); //Cambiar a datos guardados
+
+    return 1;
 }
 
 double MultiplyMatrixes() {
@@ -233,7 +235,10 @@ int main(){
         exit( EXIT_FAILURE );
     }
     
-    CreateTable();
+    if (!CreateTable()) {
+        printf("Error while printing table with runtime comparison.\n\n");
+        exit( EXIT_FAILURE );
+    }
 
     if (!FreeAllocatedMemory()) {
         printf("Error while freeing allocated memory.\n\n");
