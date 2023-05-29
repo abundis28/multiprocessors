@@ -155,7 +155,7 @@ int CreateTable() {
     return 1;
 }
 
-double MultiplyMatrixes() {
+double MultiplyMatSeq() {
     start = clock();
     for(int i = 0; i < row_a ; i++){
         for(int j = 0; j < col_b; j++){
@@ -169,6 +169,14 @@ double MultiplyMatrixes() {
     finish = clock();
     elapsed = (finish - start);
     return elapsed;
+}
+
+double MultiplyMatOpenMP() {
+    return 0.0;
+}
+
+double MultiplyMatVec() {
+    return 0.0;
 }
 
 void PrintMatrixes() {
@@ -200,6 +208,8 @@ int FreeAllocatedMemory() {
 	free(Bt);
     free(B);
 	free(C);
+
+    return 1;
 }
 
 // MAIN
@@ -225,7 +235,7 @@ int main(){
     }
 
     for(int i = 0; i < 5; i++){
-        original[i] = MultiplyMatrixes();
+        original[i] = MultiplyMatSeq();
         average_original += original[i];
     }
     printf("\nSuccessful sequential multiplication of the matrixes\n\n");
