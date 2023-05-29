@@ -172,7 +172,25 @@ double MultiplyMatSeq() {
 }
 
 double MultiplyMatOpenMP() {
-    return 0.0;
+    start = clock();
+
+    #pragma omp parallel 
+    {
+        int i, j, k;
+        #pragma omp for
+        for(i = 0; i < row_a ; i++){
+            for(j = 0; j < col_b; j++){
+                double sum = 0;
+                for(k = 0; k < row_b; k++){              
+                    sum += (A[i * col_a + k] * Bt[j * col_a + k]);
+                }
+                C[i * row_a + j] = sum;
+            }
+        }
+    }
+    finish = clock();
+    elapsed = (finish - start);
+    return elapsed;
 }
 
 double MultiplyMatVec() {
