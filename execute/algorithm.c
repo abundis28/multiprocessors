@@ -200,24 +200,6 @@ double MultiplyMatOpenMP() {
     return elapsed;
 }
 
-// double MultiplyMatOpenMP() {
-//     start = clock();
-//     int i, j, k;
-//     #pragma omp parallel for collapse(2) private(i,j,k)shared(A,Bt,C) num_threads(16)
-//     for(i = 0; i < row_a ; i++){
-//         for(j = 0; j < col_b; j++){
-//             double sum = 0;
-//             for(k = 0; k < row_b; k++){              
-//                 sum += (A[i * col_a + k] * Bt[j * col_a + k]);
-//             }
-//             C[i * col_b + j] = sum;
-//         }
-//     }
-//     finish = clock();
-//     elapsed = (finish - start);
-//     return elapsed;
-// }
-
 double MultiplyMatVec() {
     return 0.0;
 }
@@ -251,6 +233,8 @@ int FreeAllocatedMemory() {
 	free(Bt);
     free(B);
 	free(C);
+    free(C_auto);
+    free(C_open);
 
     return 1;
 }
