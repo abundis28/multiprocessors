@@ -141,16 +141,20 @@ int TransposeMatrixB() {
 }
 
 int CreateTable() {
-    printf ("| Run  ||       Serial       | Parallel 1 | Parallel 2 |\n");  
+    average_open /= 5;
+    average_original /= 5;
+    average_posix /= 5;
+    printf ("| Run  ||  Serial | Intrinsics |  OpenMP  |\n");  
     printf("----------------------------------------------------------\n"); 
     
     for (int i = 0; i < 5; i++)  {  
-        printf ("|   %d  || %7.10lf | %7.10lf | %7.10lf |\n", i+1, original[i], posix[i], open[i]); //Cambiar a datos guardados   
+        printf ("|   %d  || %7.0lf |  %7.0lf  | %7.0lf |\n", i+1, original[i], posix[i], open[i]); //Cambiar a datos guardados   
     } 
 
     printf("----------------------------------------------------------\n"); 
-    printf ("| Avg  || %7.10lf | %7.10lf | %7.10lf |\n", average_original/5, average_posix/5, average_open/5); //Cambiar a datos guardados
-    printf ("| %%Eff ||      ---      | %d | %d | \n"); //Cambiar a datos guardados
+    printf ("| Avg  || %7.0lf |  %7.0lf  | %7.0lf |\n", average_original, average_posix, average_open); //Cambiar a datos guardados
+    printf ("| %%Eff ||   ---   |  %7.4lf  | %7.4lf | \n", average_posix, average_open/average_original); //Cambiar a datos guardados
+
 
     return 1;
 }
@@ -173,17 +177,24 @@ double MultiplyMatSeq() {
 
 double MultiplyMatOpenMP() {
     start = clock();
+    double* sum_arr = NULL;
+    size_t size_sum_arr = sizeof(double) * row_b;
+    sum_arr = (double*)malloc(size_sum_arr);
 
     #pragma omp parallel 
     {
         int i, j, k;
-        #pragma omp for reduction
         for(i = 0; i < row_a ; i++){
             for(j = 0; j < col_b; j++){
+                #pragma omp for nowait
+                for(k = 0; k < row_b; k++)
+                    sum_arr[k] = (A[i * col_a + k] * Bt[j * col_a + k]);
+
                 double sum = 0;
-                for(k = 0; k < row_b; k++){              
-                    sum += (A[i * col_a + k] * Bt[j * col_a + k]);
-                }
+                #pragma omp for reduction (+:sum)
+                for(k = 0; k < row_b; k++)
+                    sum += sum_arr[k];
+                    
                 C[i * col_b + j] = sum;
             }
         }
