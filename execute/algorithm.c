@@ -24,8 +24,8 @@ FILE *textfile_a;
 FILE *textfile_b;
 clock_t start, finish;
 double elapsed;
-double original[5], posix[5], open[5];
-double average_original, average_posix, average_open;
+double original[5], auto_vec[5], open[5];
+double average_original, average_auto_vec, average_open;
 
 // FUNCTIONS
 int MatrixValidation(char id_matrix) {
@@ -152,17 +152,17 @@ int TransposeMatrixB() {
 int CreateTable() {
     average_open /= 5;
     average_original /= 5;
-    average_posix /= 5;
-    printf ("| Run  ||  Serial | Intrinsics |  OpenMP  |\n");  
-    printf("----------------------------------------------------------\n"); 
+    average_auto_vec /= 5;
+    printf ("| Run  ||  Serial |  AutoVec  |  OpenMP  |\n");  
+    printf("-------------------------------------------\n"); 
     
     for (int i = 0; i < 5; i++)  {  
-        printf ("|   %d  || %7.0lf |  %7.0lf  | %7.0lf |\n", i+1, original[i], posix[i], open[i]); //Cambiar a datos guardados   
+        printf ("|   %d  || %7.0lf |  %7.0lf  | %7.0lf |\n", i+1, original[i], auto_vec[i], open[i]); //Cambiar a datos guardados   
     } 
 
-    printf("----------------------------------------------------------\n"); 
-    printf ("| Avg  || %7.0lf |  %7.0lf  | %7.0lf |\n", average_original, average_posix, average_open); //Cambiar a datos guardados
-    printf ("| %%Eff ||   ---   |  %7.4lf  | %7.4lf | \n", average_posix, average_open/average_original); //Cambiar a datos guardados
+    printf("-------------------------------------------\n"); 
+    printf ("| Avg  || %7.0lf |  %7.0lf  | %7.0lf |\n", average_original, average_auto_vec, average_open); //Cambiar a datos guardados
+    printf ("| %%Eff ||   ---   |  %7.4lf  | %7.4lf | \n", average_auto_vec/average_original, average_open/average_original); //Cambiar a datos guardados
 
 
     return 1;
@@ -175,6 +175,7 @@ double MultiplyMatSeq() {
             double sum = 0;
             for(int k = 0; k < row_b; k++){              
                 sum += (A[i * col_a + k] * Bt[j * col_a + k]);
+                __asm("nop");
             }
             C[i * row_a + j] = sum;
         }
@@ -194,8 +195,9 @@ double MultiplyMatOpenMP() {
             double sum = 0.0;
             for (int k = 0; k < row_b; k++) {
                 sum += A[i * col_a + k] * Bt[j * col_a + k];
+                __asm("nop");
             }
-            C[i * col_b + j] = sum;
+            C_open[i * col_b + j] = sum;
         }
     }
 
@@ -206,7 +208,19 @@ double MultiplyMatOpenMP() {
 }
 
 double MultiplyMatVec() {
-    return 0.0;
+    start = clock();
+    for(int i = 0, row_a_local = row_a; i < row_a_local ; i++){
+        for(int j = 0, col_b_local = col_b; j < col_b_local; j++){
+            double sum = 0;
+            for(int k = 0, row_b_local = row_b; k < row_b_local; k++){              
+                sum += (A[i * col_a + k] * Bt[j * col_a + k]);
+            }
+            C_auto[i * row_a + j] = sum;
+        }
+    }
+    finish = clock();
+    elapsed = (finish - start);
+    return elapsed;
 }
 
 void PrintMatrixes() {
@@ -267,10 +281,12 @@ int main(){
     }
 
     for(int i = 0; i < 5; i++){
-        // original[i] = MultiplyMatSeq();
+        original[i] = MultiplyMatSeq();
         open[i] = MultiplyMatOpenMP();
+        auto_vec[i] = MultiplyMatVec();
         average_original += original[i];
         average_open += open[i];
+        average_auto_vec += auto_vec[i];
     }
     printf("\nSuccessful sequential multiplication of the matrixes\n\n");
 
