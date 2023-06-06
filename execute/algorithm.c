@@ -168,6 +168,15 @@ int CreateTable() {
     return 1;
 }
 
+void FastestMethod(){
+    if((average_original > average_open) && (average_auto_vec > average_open)){
+        printf("OpenMP is the fastest method.\n\n");
+    }else if((average_original > average_auto_vec) && (average_open > average_auto_vec)){
+        printf("Auto-Vectorization is the fastest method.\n\n");
+    }else{
+        printf("Sequential is the fastest method.\n\n");
+    }
+}
 double MultiplyMatSeq() {
     start = clock();
     for(int i = 0; i < row_a ; i++){
@@ -299,6 +308,8 @@ int main(){
         printf("Error while printing table with runtime comparison.\n\n");
         exit( EXIT_FAILURE );
     }
+
+    FastestMethod(); 
 
     if (!FreeAllocatedMemory()) {
         printf("Error while freeing allocated memory.\n\n");
