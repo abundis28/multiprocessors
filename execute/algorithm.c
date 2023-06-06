@@ -107,9 +107,14 @@ int AllocInitMemory() {
     C = (double*)malloc(sizeof(double) * row_a * col_b);
     C_auto = (double*)malloc(sizeof(double) * row_a * col_b);
     C_open = (double*)malloc(sizeof(double) * row_a * col_b);
-    printf("Memory allocated\n");
-
-    return 1;
+    
+    if((A != NULL) && (Bt != NULL)&& (B != NULL)&& (C != NULL)&& (C_auto != NULL)&& (C_open != NULL)){
+        printf("Memory allocated\n");
+        return 1;
+    }else{
+        printf("ERROR: Insufficient Memory \n");
+        return 0;
+    }
 }
 
 int CreateMatrix(char id_matrix) {
