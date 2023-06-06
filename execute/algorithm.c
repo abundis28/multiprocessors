@@ -18,6 +18,8 @@ double* A = NULL;
 double* Bt = NULL;
 double* B = NULL;
 double* C = NULL;
+double* C_auto = NULL;
+double* C_open = NULL;
 FILE *textfile_a;
 FILE *textfile_b;
 clock_t start, finish;
@@ -103,6 +105,8 @@ int AllocInitMemory() {
     Bt= (double*)malloc(sizeof(double) * row_bt * col_bt);
     B = (double*)malloc(sizeof(double) * row_b * col_b);
     C = (double*)malloc(sizeof(double) * row_a * col_b);
+    C_auto = (double*)malloc(sizeof(double) * row_a * col_b);
+    C_open = (double*)malloc(sizeof(double) * row_a * col_b);
     printf("Memory allocated\n");
 
     return 1;
@@ -177,32 +181,25 @@ double MultiplyMatSeq() {
 
 double MultiplyMatOpenMP() {
     start = clock();
-    double* sum_arr = NULL;
-    size_t size_sum_arr = sizeof(double) * row_b;
-    sum_arr = (double*)malloc(size_sum_arr);
+    double* sum_arr = (double*)malloc(sizeof(double) * row_b);
 
-    #pragma omp parallel 
-    {
-        int i, j, k;
-        for(i = 0; i < row_a ; i++){
-            for(j = 0; j < col_b; j++){
-                #pragma omp for nowait
-                for(k = 0; k < row_b; k++)
-                    sum_arr[k] = (A[i * col_a + k] * Bt[j * col_a + k]);
-
-                double sum = 0;
-                #pragma omp for reduction (+:sum)
-                for(k = 0; k < row_b; k++)
-                    sum += sum_arr[k];
-                    
-                C[i * col_b + j] = sum;
+    #pragma omp parallel for collapse(2) schedule(static, 10)
+    for (int i = 0; i < row_a; i++) {
+        for (int j = 0; j < col_b; j++) {
+            double sum = 0.0;
+            for (int k = 0; k < row_b; k++) {
+                sum += A[i * col_a + k] * Bt[j * col_a + k];
             }
+            C[i * col_b + j] = sum;
         }
     }
+
+    free(sum_arr);
     finish = clock();
     elapsed = (finish - start);
     return elapsed;
 }
+
 
 double MultiplyMatVec() {
     return 0.0;
