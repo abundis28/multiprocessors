@@ -9,6 +9,9 @@ then
 elif [ $1 == "l" ]
 then
     cp ../matrix/matrix1048576/* .
+elif [ $1 == "p" ]
+then
+    cp ../matrix/matrix10000/* .
 fi
 
 gcc algorithm.c -fopenmp -o algorithm -std=c99 -O -ftree-vectorize -mavx2 && ./algorithm
