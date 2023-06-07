@@ -1,18 +1,24 @@
 //FOR LARGE MATRIX 1024x1024  // 512x2048 // 256x4096
 // gcc algorithm.c -o algorithm -std=c99 && ./algorithm 
+#define _POSIX_C_SOURCE 199309L
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
 #include <emmintrin.h>
 #include <immintrin.h>
+#include <malloc.h>
+#include <omp.h>
 
 // CONSTANTS
 static const int MAX_LINE_LENGTH = 1000;
-const char *fileA = "matrixA.txt";
-const char *fileB = "matrixB.txt";
 
 // GLOBAL VARIABLES
+const char *fileA = "matrixA.txt";
+const char *fileB = "matrixB.txt";
+FILE *textfile_a;
+FILE *textfile_b;
+
 int row_a, col_a, row_b, col_b, row_bt, col_bt, elements_count;
 double* A = NULL;
 double* Bt = NULL;
@@ -20,9 +26,10 @@ double* B = NULL;
 double* C = NULL;
 double* C_auto = NULL;
 double* C_open = NULL;
-FILE *textfile_a;
-FILE *textfile_b;
-clock_t start, finish;
+
+struct timespec start;
+struct timespec finish;
+
 double elapsed;
 double original[5], auto_vec[5], open[5];
 double average_original, average_auto_vec, average_open;
@@ -107,6 +114,20 @@ int AllocInitMemory() {
     C = (double*)malloc(sizeof(double) * row_a * col_b);
     C_auto = (double*)malloc(sizeof(double) * row_a * col_b);
     C_open = (double*)malloc(sizeof(double) * row_a * col_b);
+
+    // double* A[row_a * col_a] __attribute__ ((aligned (64)));
+    // double* B[row_b * col_b] __attribute__ ((aligned (64)));
+    // double* Bt[row_b * col_b] __attribute__ ((aligned (64)));
+    // double* C[row_a * col_b] __attribute__ ((aligned (64)));
+    // double* C_auto[row_a * col_b] __attribute__ ((aligned (64)));
+    // double* C_open[row_a * col_b] __attribute__ ((aligned (64)));
+
+    // A = (double*)aligned_alloc(1024, sizeof(double) * row_a * col_a);
+    // Bt= (double*)aligned_alloc(1024, sizeof(double) * row_bt * col_bt);
+    // B = (double*)aligned_alloc(1024, sizeof(double) * row_b * col_b);
+    // C = (double*)aligned_alloc(1024, sizeof(double) * row_a * col_b);
+    // C_auto = (double*)aligned_alloc(1024, sizeof(double) * row_a * col_b);
+    // C_open = (double*)aligned_alloc(1024, sizeof(double) * row_a * col_b);
     
     if((A != NULL) && (Bt != NULL)&& (B != NULL)&& (C != NULL)&& (C_auto != NULL)&& (C_open != NULL)){
         printf("Memory allocated\n");
@@ -121,14 +142,17 @@ int CreateMatrix(char id_matrix) {
     double fp = 0;
     if (id_matrix == 'A') {
         textfile_a = fopen(fileA, "r");
+        // printf("File A opened\n");
         for (int i = 0; i < elements_count; i++) {
             fscanf(textfile_a, "%lf\n", &fp);
+            // printf("%lf\n", fp);
             A[i] = (double)fp;
         }
         fclose(textfile_a);
     }
     else if (id_matrix == 'B') {
         textfile_b = fopen(fileB, "r");
+        // printf("File B opened\n");
         for (int i = 0; i < elements_count; i++) {
             fscanf(textfile_b, "%lf\n", &fp);
             B[i] = (double)fp;
@@ -153,18 +177,17 @@ int CreateTable() {
     average_open /= 5;
     average_original /= 5;
     average_auto_vec /= 5;
-    printf ("| Run  ||  Serial |  AutoVec  |  OpenMP  |\n");  
+    printf ("|  Run ||  Serial\t|  AutoVec\t|  OpenMP\t|\n");  
     printf("-------------------------------------------\n"); 
     
     for (int i = 0; i < 5; i++)  {  
-        printf ("|   %d  || %7.0lf |  %7.0lf  | %7.0lf |\n", i+1, original[i], auto_vec[i], open[i]); //Cambiar a datos guardados   
+        printf ("|   %d  || %7.10lf |  %7.10lf  | %7.10lf |\n", i+1, original[i], auto_vec[i], open[i]); //Cambiar a datos guardados   
     } 
 
-    printf("-------------------------------------------\n"); 
-    printf ("| Avg  || %7.0lf |  %7.0lf  | %7.0lf |\n", average_original, average_auto_vec, average_open); //Cambiar a datos guardados
-    printf ("| %%Eff ||   ---   |  %7.4lf  | %7.4lf | \n", average_auto_vec/average_original, average_open/average_original); //Cambiar a datos guardados
-
-
+    printf("-------------------------------------------------\n"); 
+    printf ("|  Avg || %7.10lf |  %7.10lf  | %7.10lf |\n", average_original, average_auto_vec, average_open); //Cambiar a datos guardados
+    printf ("| %%Eff ||   ---\t|  %7.4lf\t| %7.4lf\t| \n", average_auto_vec/average_original, average_open/average_original); //Cambiar a datos guardados
+    
     return 1;
 }
 
@@ -179,7 +202,8 @@ void FastestMethod(){
 }
 
 double MultiplyMatSeq() {
-    start = clock();
+    printf("Multiply sequential\n");
+    clock_gettime(CLOCK_REALTIME, &start);
     for(int i = 0; i < row_a ; i++){
         for(int j = 0; j < col_b; j++){
             double sum = 0;
@@ -190,48 +214,50 @@ double MultiplyMatSeq() {
             C[i * row_a + j] = sum;
         }
     }
-    finish = clock();
-    elapsed = (finish - start);
+    clock_gettime(CLOCK_REALTIME, &finish);
+    elapsed =  (finish.tv_sec - start.tv_sec) + (double)(finish.tv_nsec - start.tv_nsec) / 1000000000.0;
     return elapsed;
 }
 
 double MultiplyMatOpenMP() {
-    start = clock();
-    double* sum_arr = (double*)malloc(sizeof(double) * row_b);
+    clock_gettime(CLOCK_REALTIME, &start);
+    int i, j, k;
+    double sum = 0.0;
 
-    #pragma omp parallel for collapse(2) schedule(static, 10)
-    for (int i = 0; i < row_a; i++) {
-        for (int j = 0; j < col_b; j++) {
-            double sum = 0.0;
-            for (int k = 0; k < row_b; k++) {
-                sum += A[i * col_a + k] * Bt[j * col_a + k];
-                __asm("nop");
+    #pragma omp parallel shared(A, Bt, C_open) private(i, j ,k) num_threads(8)
+    {
+        #pragma omp for reduction (+:sum) schedule(static)
+        for (i = 0; i < row_a; i++) {
+            for (j = 0; j < col_b; j++) {
+                sum = 0.0;
+                for (k = 0; k < row_b; k++) {
+                    sum += A[i * col_a + k] * Bt[j * col_a + k];
+                    // __asm("nop");
+                }
+                C_open[i * col_b + j] = sum;
             }
-            C_open[i * col_b + j] = sum;
         }
     }
-
-    free(sum_arr);
-    finish = clock();
-    elapsed = (finish - start);
+    clock_gettime(CLOCK_REALTIME, &finish);
+    elapsed =  (finish.tv_sec - start.tv_sec) + (double)(finish.tv_nsec - start.tv_nsec) / 1000000000.0;
     return elapsed;
 }
 
-double MultiplyMatVec() {
-    start = clock();
-    for(int i = 0, row_a_local = row_a; i < row_a_local ; i++){
-        for(int j = 0, col_b_local = col_b; j < col_b_local; j++){
-            double sum = 0;
-            for(int k = 0, row_b_local = row_b; k < row_b_local; k++){              
-                sum += (A[i * col_a + k] * Bt[j * col_a + k]);
-            }
-            C_auto[i * row_a + j] = sum;
-        }
-    }
-    finish = clock();
-    elapsed = (finish - start);
-    return elapsed;
-}
+// double MultiplyMatVec() {
+//     clock_gettime(CLOCK_REALTIME, &start);
+//     for(int i = 0, row_a_local = row_a; i < row_a_local ; i++){
+//         for(int j = 0, col_b_local = col_b; j < col_b_local; j++){
+//             double sum = 0;
+//             for(int k = 0, row_b_local = row_b; k < row_b_local; k++){              
+//                 sum += (A[i * col_a + k] * Bt[j * col_a + k]);
+//             }
+//             C_auto[i * row_a + j] = sum;
+//         }
+//     }
+//     clock_gettime(CLOCK_REALTIME, &finish);
+//     elapsed =  (finish.tv_sec - start.tv_sec) + (double)(finish.tv_nsec - start.tv_nsec) / 1000000000.0;
+//     return elapsed;
+// }
 
 void PrintMatrixes() {
     printf("\n\n");
@@ -321,7 +347,7 @@ int main(){
     for(int i = 0; i < 5; i++){
         original[i] = MultiplyMatSeq();
         open[i] = MultiplyMatOpenMP();
-        auto_vec[i] = MultiplyMatVec();
+        // auto_vec[i] = MultiplyMatVec();
         average_original += original[i];
         average_open += open[i];
         average_auto_vec += auto_vec[i];
@@ -334,7 +360,7 @@ int main(){
         exit( EXIT_FAILURE );
     }
     
-    if (!CheckResults('A') || !CheckResults('O')) {
+    if (!CheckResults('O')) {
         FreeAllocatedMemory();
         exit( EXIT_FAILURE );
     }

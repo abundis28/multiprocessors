@@ -14,7 +14,7 @@ then
     cp ../matrix/matrix10000/* .
 fi
 
-gcc algorithm.c -fopenmp -o algorithm -std=c99 -O -ftree-vectorize -mavx2 && ./algorithm
+gcc algorithm.c -fopenmp -o algorithm -std=c99 -O && ./algorithm
 
 rm matrix*
 rm algorithm
