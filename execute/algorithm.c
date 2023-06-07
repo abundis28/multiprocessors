@@ -281,11 +281,11 @@ int CheckResults(char id_matrix){
 
     for(int i = 0; i < row_a ; i++){
         for(int j = 0; j < col_b; j++){
-            if((C[i * row_a + j] - C_check[i * row_a + j]) > 0.001){
+            if(fabs(C[i * row_a + j] - C_check[i * row_a + j]) > 0.00001){
                 if(id_matrix == 'A'){
-                    printf("Error while comparing auto-vectorization matrix results.\n\n");
+                    printf("Wrong auto-vectorization matrix mutplication result.\n\n");
                 }else if(id_matrix == 'O'){
-                     printf("Error while comparing OpenMP matrix results.\n\n");
+                     printf("Wrong OpenMP matrix multiplication result.\n\n");
                 }
                 return 0;
             }
@@ -326,7 +326,7 @@ int main(){
         average_open += open[i];
         average_auto_vec += auto_vec[i];
     }
-    printf("\nSuccessful sequential multiplication of the matrixes\n\n");
+    printf("\n\nSuccessful sequential multiplication of the matrixes\n\n");
 
     if (!WriteResultMatrixToTxt()) {
         printf("Error while writing result matrix to txt file.\n\n");
