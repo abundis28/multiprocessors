@@ -177,6 +177,7 @@ void FastestMethod(){
         printf("Sequential is the fastest method.\n\n");
     }
 }
+
 double MultiplyMatSeq() {
     start = clock();
     for(int i = 0; i < row_a ; i++){
@@ -267,6 +268,32 @@ int FreeAllocatedMemory() {
     return 1;
 }
 
+int CheckResults(char id_matrix){
+    double* C_check = NULL;
+    if (id_matrix == 'A') {
+        C_check = C_auto;
+    }
+    else if (id_matrix == 'O') {
+        C_check = C_open;
+    } else{
+        return 0;
+    }
+
+    for(int i = 0; i < row_a ; i++){
+        for(int j = 0; j < col_b; j++){
+            if((C[i * row_a + j] - C_check[i * row_a + j]) > 0.001){
+                if(id_matrix == 'A'){
+                    printf("Error while comparing auto-vectorization matrix results.\n\n");
+                }else if(id_matrix == 'O'){
+                     printf("Error while comparing OpenMP matrix results.\n\n");
+                }
+                return 0;
+            }
+        }
+    }
+    return 1;
+}
+
 // MAIN
 int main(){
     if (!OpenFile('A') || !OpenFile('B')) {
@@ -281,11 +308,13 @@ int main(){
 
     if (!CreateMatrix('A') || !CreateMatrix('B')) {
         printf("Error while creating the matrixes.\n\n");
+        FreeAllocatedMemory();
         exit( EXIT_FAILURE );
     }
 
     if (!TransposeMatrixB()) {
         printf("Error while transposing second matrix.\n\n");
+        FreeAllocatedMemory();
         exit( EXIT_FAILURE );
     }
 
@@ -301,11 +330,18 @@ int main(){
 
     if (!WriteResultMatrixToTxt()) {
         printf("Error while writing result matrix to txt file.\n\n");
+        FreeAllocatedMemory();
         exit( EXIT_FAILURE );
     }
     
+    if (!CheckResults('A') || !CheckResults('O')) {
+        FreeAllocatedMemory();
+        exit( EXIT_FAILURE );
+    }
+
     if (!CreateTable()) {
         printf("Error while printing table with runtime comparison.\n\n");
+        FreeAllocatedMemory();
         exit( EXIT_FAILURE );
     }
 
