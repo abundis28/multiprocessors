@@ -1,5 +1,6 @@
-//FOR LARGE MATRIX 1024x1024  // 512x2048 // 256x4096
-// gcc algorithm.c -o algorithm -std=c99 && ./algorithm 
+// export PATH=/usr/local/gcc9.3/bin:$PATH
+// gcc algorithm.c -fopenmp -o algorithm -std=c11 -O -ftree-vectorize -mavx512f  && ./algorithm
+
 #define _POSIX_C_SOURCE 199309L
 
 #include <stdio.h>
@@ -135,10 +136,8 @@ int CreateMatrix(char id_matrix) {
     double fp = 0;
     if (id_matrix == 'A') {
         textfile_a = fopen(fileA, "r");
-        // printf("File A opened\n");
         for (int i = 0; i < elements_count; i++) {
             fscanf(textfile_a, "%lf\n", &fp);
-            // printf("%lf\n", fp);
             A[i] = (double)fp;
             A_ali[i] = (double)fp;
         }
@@ -146,7 +145,6 @@ int CreateMatrix(char id_matrix) {
     }
     else if (id_matrix == 'B') {
         textfile_b = fopen(fileB, "r");
-        // printf("File B opened\n");
         for (int i = 0; i < elements_count; i++) {
             fscanf(textfile_b, "%lf\n", &fp);
             B[i] = (double)fp;
