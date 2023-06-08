@@ -1,7 +1,7 @@
 // Git repo: https://github.com/abundis28/multiprocessors
 
 // export PATH=/usr/local/gcc9.3/bin:$PATH
-// gcc algorithm.c -fopenmp -o algorithm -std=c11 -O -ftree-vectorize -mavx512f  && ./algorithm
+// gcc algorithm.c -fopenmp -o algorithm -std=c11 -O -ftree-vectorize -mavx512f -fopt-info-vec -ffast-math && ./algorithm
 
 #define _POSIX_C_SOURCE 199309L
 

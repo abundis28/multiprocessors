@@ -17,7 +17,7 @@ fi
 
 # Execute algorithm with the desired matrix.
 export PATH=/usr/local/gcc9.3/bin:$PATH
-gcc algorithm.c -fopenmp -o algorithm -std=c11 -O -ftree-vectorize -mavx512f  && ./algorithm
+gcc algorithm.c -fopenmp -o algorithm -std=c11 -O -ftree-vectorize -mavx512f -fopt-info-vec -ffast-math && ./algorithm
 
 # Remove copied files and compiled binary
 rm matrizA.txt
