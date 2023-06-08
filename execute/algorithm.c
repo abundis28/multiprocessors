@@ -124,7 +124,7 @@ int AllocInitMemory() {
     B_ali =     (double*)aligned_alloc(64, sizeof(double) * row_b * col_b);
     C_ali =     (double*)aligned_alloc(64, sizeof(double) * row_a * col_b);
 
-    if((A == NULL) || (Bt == NULL) || (B == NULL) || (C == NULL) /*|| (C_ali == NULL)*/ || (C_open == NULL)){
+    if((A == NULL) || (Bt == NULL) || (B == NULL) || (C == NULL) || (C_open == NULL) || (A_ali == NULL) || (B_ali == NULL) || (Bt_ali == NULL) || (C_ali == NULL)){
         return 0;
     }
     printf("Enough memory allocated.\n");
@@ -169,6 +169,110 @@ int TransposeMatrixB() {
     return 1;
 }
 
+int CheckResults(char id_matrix){
+    double* C_check = NULL;
+    if (id_matrix == 'A') {
+        C_check = C_ali;
+    }
+    else if (id_matrix == 'O') {
+        C_check = C_open;
+    } else{
+        return 0;
+    }
+
+    for(int i = 0; i < row_a ; i++){
+        for(int j = 0; j < col_b; j++){
+            if(fabs(C[i * row_a + j] - C_check[i * row_a + j]) > 0.0000000001){
+                if(id_matrix == 'A'){
+                    printf("Wrong auto-vectorization matrix mutplication result.\n\n");
+                }else if(id_matrix == 'O'){
+                     printf("Wrong OpenMP matrix multiplication result.\n\n");
+                }
+                return 0;
+            }
+        }
+    }
+
+    if (id_matrix == 'O') {
+        printf("The matrix result of OpenMP multiplication is correct.\n");
+    } else if (id_matrix == 'A') {
+        printf("The matrix result of AutoVec multiplication is correc.\n");
+    }
+    return 1;
+}
+
+double MultiplyMatSeq() {
+    clock_gettime(CLOCK_REALTIME, &start);
+
+    for(int i = 0; i < row_a ; i++){
+        for(int j = 0; j < col_b; j++){
+            double sum = 0;
+                for(int k = 0; k < row_b; k++){    
+                    __asm("nop");          
+                    sum += (A[i * col_a + k] * Bt[j * col_a + k]);
+                }
+            C[i * row_a + j] = sum;
+        }
+    }
+    clock_gettime(CLOCK_REALTIME, &finish);
+    elapsed =  (finish.tv_sec - start.tv_sec) + (double)(finish.tv_nsec - start.tv_nsec) / 1000000000.0;
+
+    printf("\nSuccessful sequential multiplication\n");
+
+    return elapsed;
+}
+
+double MultiplyMatOpenMP() {
+    clock_gettime(CLOCK_REALTIME, &start);
+    int i, j, k;
+    double sum = 0.0;
+
+    #pragma omp parallel shared(A, Bt, C_open) private(i, j ,k) num_threads(8)
+    {
+        #pragma omp for reduction (+:sum) schedule(static)
+        for (i = 0; i < row_a; i++) {
+            for (j = 0; j < col_b; j++) {
+                sum = 0.0;
+                for (k = 0; k < row_b; k++) {
+                    __asm("nop");
+                    sum += A[i * col_a + k] * Bt[j * col_a + k];
+                }
+                C_open[i * col_b + j] = sum;
+            }
+        }
+    }
+    clock_gettime(CLOCK_REALTIME, &finish);
+    elapsed =  (finish.tv_sec - start.tv_sec) + (double)(finish.tv_nsec - start.tv_nsec) / 1000000000.0;
+
+    if (!CheckResults('O')) {
+        return 0;
+    }
+
+    return elapsed;
+}
+
+double MultiplyMatVec() {
+    clock_gettime(CLOCK_REALTIME, &start);
+
+    for(int i = 0, row_a_local = row_a; i < row_a_local ; i++){
+        for(int j = 0, col_b_local = col_b; j < col_b_local; j++){
+            double sum = 0;
+            for(int k = 0, row_b_local = row_b; k < row_b_local; k++){              
+                sum += (A_ali[i * col_a + k] * Bt_ali[j * col_a + k]);
+            }
+            C_ali[i * row_a + j] = sum;
+        }
+    }
+    clock_gettime(CLOCK_REALTIME, &finish);
+    elapsed =  (finish.tv_sec - start.tv_sec) + (double)(finish.tv_nsec - start.tv_nsec) / 1000000000.0;
+
+    if (!CheckResults('A')) {
+        return 0;
+    }
+
+    return elapsed;
+}
+
 int CreateTable() {
     average_open /= 5;
     average_original /= 5;
@@ -195,65 +299,6 @@ void FastestMethod(){
     }else{
         printf("Sequential is the fastest method.\n\n");
     }
-}
-
-double MultiplyMatSeq() {
-    clock_gettime(CLOCK_REALTIME, &start);
-
-    for(int i = 0; i < row_a ; i++){
-        for(int j = 0; j < col_b; j++){
-            double sum = 0;
-                for(int k = 0; k < row_b; k++){    
-                    __asm("nop");          
-                    sum += (A[i * col_a + k] * Bt[j * col_a + k]);
-                }
-            C[i * row_a + j] = sum;
-        }
-    }
-    clock_gettime(CLOCK_REALTIME, &finish);
-    elapsed =  (finish.tv_sec - start.tv_sec) + (double)(finish.tv_nsec - start.tv_nsec) / 1000000000.0;
-    return elapsed;
-}
-
-double MultiplyMatOpenMP() {
-    clock_gettime(CLOCK_REALTIME, &start);
-    int i, j, k;
-    double sum = 0.0;
-
-    #pragma omp parallel shared(A, Bt, C_open) private(i, j ,k) num_threads(8)
-    {
-        #pragma omp for reduction (+:sum) schedule(static)
-        for (i = 0; i < row_a; i++) {
-            for (j = 0; j < col_b; j++) {
-                sum = 0.0;
-                for (k = 0; k < row_b; k++) {
-                    __asm("nop");
-                    sum += A[i * col_a + k] * Bt[j * col_a + k];
-                }
-                C_open[i * col_b + j] = sum;
-            }
-        }
-    }
-    clock_gettime(CLOCK_REALTIME, &finish);
-    elapsed =  (finish.tv_sec - start.tv_sec) + (double)(finish.tv_nsec - start.tv_nsec) / 1000000000.0;
-    return elapsed;
-}
-
-double MultiplyMatVec() {
-    clock_gettime(CLOCK_REALTIME, &start);
-
-    for(int i = 0, row_a_local = row_a; i < row_a_local ; i++){
-        for(int j = 0, col_b_local = col_b; j < col_b_local; j++){
-            double sum = 0;
-            for(int k = 0, row_b_local = row_b; k < row_b_local; k++){              
-                sum += (A_ali[i * col_a + k] * Bt_ali[j * col_a + k]);
-            }
-            C_ali[i * row_a + j] = sum;
-        }
-    }
-    clock_gettime(CLOCK_REALTIME, &finish);
-    elapsed =  (finish.tv_sec - start.tv_sec) + (double)(finish.tv_nsec - start.tv_nsec) / 1000000000.0;
-    return elapsed;
 }
 
 void PrintMatrixes() {
@@ -288,38 +333,6 @@ int FreeAllocatedMemory() {
     free(C_ali);
     free(C_open);
 
-    return 1;
-}
-
-int CheckResults(char id_matrix){
-    double* C_check = NULL;
-    if (id_matrix == 'A') {
-        C_check = C_ali;
-    }
-    else if (id_matrix == 'O') {
-        C_check = C_open;
-    } else{
-        return 0;
-    }
-
-    for(int i = 0; i < row_a ; i++){
-        for(int j = 0; j < col_b; j++){
-            if(fabs(C[i * row_a + j] - C_check[i * row_a + j]) > 0.0000000001){
-                if(id_matrix == 'A'){
-                    printf("Wrong auto-vectorization matrix mutplication result.\n\n");
-                }else if(id_matrix == 'O'){
-                     printf("Wrong OpenMP matrix multiplication result.\n\n");
-                }
-                return 0;
-            }
-        }
-    }
-
-    if ('O') {
-        printf("\nThe matrix result of OpenMP multiplication is correct.\n");
-    } else if ('A') {
-        printf("\nThe matrix result of AutoVec multiplication is correc.\n");
-    }
     return 1;
 }
 
@@ -364,11 +377,6 @@ int main(){
         exit( EXIT_FAILURE );
     }
     
-    if (!CheckResults('O')) {
-        FreeAllocatedMemory();
-        exit( EXIT_FAILURE );
-    }
-
     if (!CreateTable()) {
         printf("Error while printing table with runtime comparison.\n\n");
         FreeAllocatedMemory();
