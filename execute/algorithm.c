@@ -139,6 +139,7 @@ int CreateMatrix(char id_matrix) {
             fscanf(textfile_a, "%lf\n", &fp);
             // printf("%lf\n", fp);
             A[i] = (double)fp;
+            A_ali[i] = (double)fp;
         }
         fclose(textfile_a);
     }
@@ -148,6 +149,7 @@ int CreateMatrix(char id_matrix) {
         for (int i = 0; i < elements_count; i++) {
             fscanf(textfile_b, "%lf\n", &fp);
             B[i] = (double)fp;
+            B_ali[i] = (double)fp;
         }
         fclose(textfile_b);
     }
@@ -159,6 +161,7 @@ int TransposeMatrixB() {
     for (int i = 0; i < row_b; ++i) {
         for (int j = 0; j < col_b; ++j) {
             Bt[(j * row_b) + i] = B[(i * col_b) + j];
+            Bt_ali[(j * row_b) + i] = B_ali[(i * col_b) + j];
         }
     }
     printf("\nSuccessful transposing of Matrix B\n");
@@ -223,7 +226,7 @@ double MultiplyMatOpenMP() {
                 sum = 0.0;
                 for (k = 0; k < row_b; k++) {
                     sum += A[i * col_a + k] * Bt[j * col_a + k];
-                    // __asm("nop");
+                    __asm("nop");
                 }
                 C_open[i * col_b + j] = sum;
             }
@@ -240,7 +243,7 @@ double MultiplyMatVec() {
         for(int j = 0, col_b_local = col_b; j < col_b_local; j++){
             double sum = 0;
             for(int k = 0, row_b_local = row_b; k < row_b_local; k++){              
-                sum += (A[i * col_a + k] * Bt[j * col_a + k]);
+                sum += (A_ali[i * col_a + k] * Bt_ali[j * col_a + k]);
             }
             C_ali[i * row_a + j] = sum;
         }
@@ -345,12 +348,12 @@ int main(){
     for(int i = 0; i < 5; i++){
         original[i] = MultiplyMatSeq();
         open[i] = MultiplyMatOpenMP();
-        // auto_vec[i] = MultiplyMatVec();
+        auto_vec[i] = MultiplyMatVec();
         average_original += original[i];
         average_open += open[i];
         average_auto_vec += auto_vec[i];
     }
-    printf("\nSuccessful sequential multiplication of the matrixes\n");
+    printf("\nSuccessful multiplication of the matrixes\n");
 
     if (!WriteResultMatrixToTxt()) {
         printf("Error while writing result matrix to txt file.\n\n");
