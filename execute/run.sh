@@ -14,7 +14,8 @@ then
     cp ../matrix/matrix10000/* .
 fi
 
-gcc algorithm.c -fopenmp -o algorithm -std=c11 && ./algorithm
+export PATH=/usr/local/gcc9.3/bin:$PATH
+gcc algorithm.c -fopenmp -o algorithm -std=c11 -O -ftree-vectorize -mavx512f  && ./algorithm
 
 rm matrizA.txt
 rm matrizB.txt

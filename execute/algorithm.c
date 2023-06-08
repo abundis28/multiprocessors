@@ -8,6 +8,7 @@
 #include <emmintrin.h>
 #include <immintrin.h>
 #include <omp.h>
+#include <math.h>
 
 // CONSTANTS
 static const int MAX_LINE_LENGTH = 1000;
@@ -198,13 +199,14 @@ void FastestMethod(){
 
 double MultiplyMatSeq() {
     clock_gettime(CLOCK_REALTIME, &start);
+
     for(int i = 0; i < row_a ; i++){
         for(int j = 0; j < col_b; j++){
             double sum = 0;
-            for(int k = 0; k < row_b; k++){              
-                sum += (A[i * col_a + k] * Bt[j * col_a + k]);
-                __asm("nop");
-            }
+                for(int k = 0; k < row_b; k++){    
+                    __asm("nop");          
+                    sum += (A[i * col_a + k] * Bt[j * col_a + k]);
+                }
             C[i * row_a + j] = sum;
         }
     }
@@ -225,8 +227,8 @@ double MultiplyMatOpenMP() {
             for (j = 0; j < col_b; j++) {
                 sum = 0.0;
                 for (k = 0; k < row_b; k++) {
-                    sum += A[i * col_a + k] * Bt[j * col_a + k];
                     __asm("nop");
+                    sum += A[i * col_a + k] * Bt[j * col_a + k];
                 }
                 C_open[i * col_b + j] = sum;
             }
@@ -239,6 +241,7 @@ double MultiplyMatOpenMP() {
 
 double MultiplyMatVec() {
     clock_gettime(CLOCK_REALTIME, &start);
+
     for(int i = 0, row_a_local = row_a; i < row_a_local ; i++){
         for(int j = 0, col_b_local = col_b; j < col_b_local; j++){
             double sum = 0;
@@ -374,7 +377,7 @@ int main(){
 
     FastestMethod(); 
 
-    if (!FreeAllocatedMemory()) {
+    if (!FreeAllocatedMemory()) {   
         printf("Error while freeing allocated memory.\n\n");
         exit( EXIT_FAILURE );
     }
