@@ -1,3 +1,5 @@
+// Git repo: https://github.com/abundis28/multiprocessors
+
 // export PATH=/usr/local/gcc9.3/bin:$PATH
 // gcc algorithm.c -fopenmp -o algorithm -std=c11 -O -ftree-vectorize -mavx512f  && ./algorithm
 
